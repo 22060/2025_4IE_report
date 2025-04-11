@@ -1,0 +1,15 @@
+out
+build
+output
+.pdf
+bin
+lib
+.vscode
+java
+*.java
+
+.pio
+.vscode
+*.o
+*.exe
+*.out
