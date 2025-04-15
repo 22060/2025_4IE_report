@@ -13,13 +13,13 @@ int main(void)
     str[strlen(str) - 1] = 0; // Remove newline character
     while ((buf = strsep(&p, " ")) != NULL)
     {
-        strs[i] = buf;
-        i++;
+        strs[i++] = buf;
     }
     strs[i] = NULL; // Null-terminate the array
-    for (int j = 0; j < i; j++)
+    while (**strs != NULL)
     {
-        printf("%s\n", strs[j]);
+        printf("%s\n", (*strs));
+        (*strs) += strlen(*strs) + 1;
     }
     return 0;
 }
