@@ -14,7 +14,6 @@ void chatcher2()
 void chatcher3()
 {
     printf("caught3\n");
-    // exit(0);
 }
 
 void yes(int argc, char *argv[])
