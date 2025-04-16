@@ -30,8 +30,9 @@ int main()
         childpid = fork();
         if (childpid == 0)
         {
-            execv(strs[0], strs);
-            exit(0);
+            printf("%d\n", getpid());
+            sleep(10);
+            exit(execv(strs[0], strs));
         }
         wait(&status);
         printf("%04x\n", status);

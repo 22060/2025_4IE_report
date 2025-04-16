@@ -10,7 +10,7 @@ SIZE	= sh-elf-size
 RANLIB	= sh-elf-ranlib
 EXBIN	= exbin
 BINEX	= binex
-
+OUTPUTDIR = ./OUTPUT
 
 # --------------------------------------------------------------------
 TOPDIR	= /usr/local/sh-elf
@@ -24,7 +24,7 @@ ASFLAGS	=
 CFLAGS = -nostdinc -nostdlib $(ASFLAGS) $(INCLUDES) -mrenesas -m2 -mb
 LDFLAGS = -nostdlib --entry _vect0 $(LIBDIR)
 LIBDEPS	= -lmemes -lgcc
-OBJ_LDFLAGS = $(LDFLAGS) -T ram.map
+OBJ_LDFLAGS = $(LDFLAGS) -T ../lib/ram.map
 OBJ_CFLAGS = $(CFLAGS) -O0
 
 # --------------------------------------------------------------------
@@ -43,20 +43,20 @@ OBJ_CFLAGS = $(CFLAGS) -O0
 # --------------------------------------------------------------------
 TGT = test
 
-DEP_O = typedef.h libmemes.h
-DEP_MYLIB_O = libmemes.h
+DEP_O = ../lib/typedef.h ../lib/libmemes.h
+DEP_MYLIB_O = ../lib/libmemes.h
 
-STDOBJS = vectors.o startup.o
-MYLIB = libmemes.a
+STDOBJS = ../lib/vectors.o ../lib/startup.o
+MYLIB = ../lib/libmemes.a
 
 OBJS = $(STDOBJS) $(TGT).o
 
 $(TGT) : $(MYLIB) $(OBJS)
-	@echo $(LD) --oformat srec $(OBJ_LDFLAGS) -o $(TGT).mot $(OBJS) $(LIBDEPS)
-	@$(LD) --oformat srec $(OBJ_LDFLAGS) -o $(TGT).mot $(OBJS) $(LIBDEPS)
-	@$(LD) $(OBJ_LDFLAGS) -o debug.out $(OBJS) $(LIBDEPS)
-	@$(NM) debug.out | grep -v \\.text | grep -v \\.data | grep -v \\.bss | grep -v compiled | sort > $(TGT).sym
-	@$(SIZE) debug.out
+	@echo $(LD) --oformat srec $(OBJ_LDFLAGS) -o ./bin/$(TGT).mot $(OBJS) $(LIBDEPS)
+	@$(LD) --oformat srec $(OBJ_LDFLAGS) -o ./bin/$(TGT).mot $(OBJS) $(LIBDEPS)
+	@$(LD) $(OBJ_LDFLAGS) -o ./bin/debug.out $(OBJS) $(LIBDEPS)
+	@$(NM) debug.out | grep -v \\.text | grep -v \\.data | grep -v \\.bss | grep -v compiled | sort > ./bin/$(TGT).sym
+	@$(SIZE) ./bin/debug.out
 
 
 $(TGT).o : $(DEP_O)
