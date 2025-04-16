@@ -13,3 +13,12 @@ java
 *.o
 *.exe
 *.out
+build-binutils
+binutils-2.44
+*.xz
+*.gz
+*.tar
+*.tar.xz
+gcc-14.2.0
+build-gcc
+zz
