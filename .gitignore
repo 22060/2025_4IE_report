@@ -3,7 +3,6 @@ build
 output
 .pdf
 bin
-lib
 .vscode
 java
 *.java
