@@ -18,7 +18,7 @@ TOPDIR	= /usr/local/sh-elf
 INCLUDES = -I$(TOPDIR)/include
 LIBDIR = -L$(TOPDIR)/sh-elf/lib
 LIBDIR += -L$(TOPDIR)/lib/gcc/sh-elf/14.2.0
-LIBDIR += -L.
+LIBDIR += -L../lib
 ASFLAGS	=
 
 CFLAGS = -nostdinc -nostdlib $(ASFLAGS) $(INCLUDES) -mrenesas -m2 -mb
@@ -55,8 +55,9 @@ $(TGT) : $(MYLIB) $(OBJS)
 	@echo $(LD) --oformat srec $(OBJ_LDFLAGS) -o ./bin/$(TGT).mot $(OBJS) $(LIBDEPS)
 	@$(LD) --oformat srec $(OBJ_LDFLAGS) -o ./bin/$(TGT).mot $(OBJS) $(LIBDEPS)
 	@$(LD) $(OBJ_LDFLAGS) -o ./bin/debug.out $(OBJS) $(LIBDEPS)
-	@$(NM) debug.out | grep -v \\.text | grep -v \\.data | grep -v \\.bss | grep -v compiled | sort > ./bin/$(TGT).sym
+	@$(NM) ./bin/debug.out | grep -v \\.text | grep -v \\.data | grep -v \\.bss | grep -v compiled | sort > ./bin/$(TGT).sym
 	@$(SIZE) ./bin/debug.out
+	@rm -f $(TGT).o
 
 
 $(TGT).o : $(DEP_O)
@@ -64,4 +65,5 @@ $(TGT).o : $(DEP_O)
 $(MYLIB) : $(DEP_MYLIB_O)
 
 clean:
-	rm -f $(OBJS) $(TGT).sym $(TGT).mot debug.out
+	rm -f $(OBJS) $(TGT).sym $(TGT).mot debug.out test.o
+
