@@ -30,7 +30,7 @@ OBJ_CFLAGS = $(CFLAGS) -O0
 .S.o :
 	$(CC) -c $(OBJ_CFLAGS) $<
 
-TGT = display
+TGT = interrupt
 
 STDOBJS = ../lib/vectors.o ../lib/startup.o
 OBJS = $(STDOBJS) $(TGT).o
