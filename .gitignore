@@ -23,3 +23,5 @@ build-gcc
 zz
 !vectors.o
 !startup.o
+
+.pio

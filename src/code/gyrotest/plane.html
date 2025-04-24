@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Box Rotation</title>
+    <style>
+        canvas {
+            display: block;
+            background: white;
+        }
+    </style>
+</head>
+
+<body onload="onLoad()">
+    <canvas id="canvas" width="1100" height="600"></canvas>
+    <!-- 1m = 100px -->
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        // canvas.width = window.innerWidth;
+        // canvas.height = window.innerHeight;
+
+        let radRoll = 0, radPitch = 0, radYaw = 0, dx = 0, dy = 0;
+        console.log(canvas.width, canvas.height);
+
+        function drawBox() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const w = 100, h = 50, d = 10;
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+
+            // const points = [
+            //     { x: -w, y: -h, z: -d }, { x: w, y: -h, z: -d }, { x: w, y: h, z: -d }, { x: -w, y: h, z: -d },
+            //     { x: -w, y: -h, z: d }, { x: w, y: -h, z: d }, { x: w, y: h, z: d }, { x: -w, y: h, z: d }
+            // ];
+
+            // const rotatedPoints = points.map(p => rotatePoint(p));
+
+            // const faces = [
+            //     [0, 1, 2, 3], [4, 5, 6, 7],
+            //     [0, 1, 5, 4], [1, 2, 6, 5],
+            //     [2, 3, 7, 6], [3, 0, 4, 7]
+            // ];
+
+            // faces.forEach(face => {
+            //     const isFront = isFaceFront(rotatedPoints, face);
+            //     ctx.fillStyle = isFront ? 'blue' : 'red';
+            //     ctx.strokeStyle = 'lime';
+
+            //     ctx.beginPath();
+            //     face.forEach((idx, i) => {
+            //         const p = rotatedPoints[idx];
+            //         const px = cx + p.x;
+            //         const py = cy + p.y;
+            //         if (i === 0) ctx.moveTo(px, py);
+            //         else ctx.lineTo(px, py);
+            //     });
+            //     ctx.closePath();
+            //     ctx.fill();
+            //     ctx.stroke();
+            // });
+            console.log(cx + (dx - 0), cy + (dy - 0));
+            drawAxes(cx + (dx - 0), cy + (dy - 0));
+        }
+
+        function rotatePoint(p) {
+            let x = p.x * Math.cos(radRoll) - p.y * Math.sin(radRoll);
+            let y = p.x * Math.sin(radRoll) + p.y * Math.cos(radRoll);
+            let z = p.z;
+
+            let newY = y * Math.cos(radPitch) - z * Math.sin(radPitch);
+            let newZ = y * Math.sin(radPitch) + z * Math.cos(radPitch);
+            y = newY;
+            z = newZ;
+
+            let newX = x * Math.cos(radYaw) - z * Math.sin(radYaw);
+            newZ = x * Math.sin(radYaw) + z * Math.cos(radYaw);
+            x = newX;
+            z = newZ;
+
+            return { x: x, y: y, z: newZ };
+        }
+
+        function isFaceFront(points, face) {
+            const v1 = {
+                x: points[face[1]].x - points[face[0]].x,
+                y: points[face[1]].y - points[face[0]].y,
+                z: points[face[1]].z - points[face[0]].z
+            };
+            const v2 = {
+                x: points[face[2]].x - points[face[1]].x,
+                y: points[face[2]].y - points[face[1]].y,
+                z: points[face[2]].z - points[face[1]].z
+            };
+            const normal = {
+                x: v1.y * v2.z - v1.z * v2.y,
+                y: v1.z * v2.x - v1.x * v2.z,
+                z: v1.x * v2.y - v1.y * v2.x
+            };
+            return normal.z >= 0;
+        }
+
+        function drawAxes(cx, cy) {
+            const axes = [
+                { x: 50, y: 0, z: 0, color: 'red' },
+                { x: 0, y: 50, z: 0, color: 'green' },
+                { x: 0, y: 0, z: 50, color: 'blue' }
+            ];
+
+            axes.forEach(axis => {
+                const rotated = rotatePoint(axis);
+                ctx.strokeStyle = axis.color;
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.lineTo(cx + rotated.x, cy + rotated.y);
+                ctx.stroke();
+            });
+        }
+
+        function animate() {
+            drawBox();
+            requestAnimationFrame(animate);
+        }
+
+        function initWebSocket() {
+            console.log('Trying to open a WebSocket connection...');
+            websocket = new WebSocket(`ws://${location.hostname}:8080/`);
+            websocket.onopen = () => console.log('Connection opened');
+            websocket.onclose = () => setTimeout(initWebSocket, 200);
+            websocket.onmessage = (event) => {
+                const rdata = JSON.parse(event.data);
+                radRoll = (rdata[0] - 180) * Math.PI / 180;
+                radPitch = (rdata[1] - 180) * Math.PI / 180;
+                radYaw = (rdata[2]) * Math.PI / 180;
+                dx = rdata[3];
+                dy = rdata[4];
+                // console.log(rdata);
+            };
+        }
+
+        function onLoad() {
+            initWebSocket();
+            animate();
+        }
+    </script>
+</body>
+
+</html>

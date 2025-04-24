@@ -1,0 +1,2 @@
+.program led_on
+    set pins, 1  ; GPIO2 を HIGH にする

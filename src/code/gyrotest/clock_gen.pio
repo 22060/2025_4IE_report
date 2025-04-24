@@ -1,0 +1,5 @@
+.program clock_gen
+loop:
+    set pins, 1 [1]  ; ピンをHIGHにする
+    set pins, 0 [1]  ; ピンをLOWにする
+    jmp loop         ; ループする
