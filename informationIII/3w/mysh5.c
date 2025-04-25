@@ -6,17 +6,21 @@
 #include <signal.h>
 #define SIGSTOP 19
 #define SIGCONT 18
+int childpid;
+void chtcher(int sig)
+{
+    kill(childpid, SIGINT);
+}
 int main()
 {
     char buf[BUFSIZ];
 
-    int childpid;
     int status;
     char *arg1 = NULL;
     char *strs[BUFSIZ];
     int i = 0;
     char buf2[BUFSIZ];
-    signal(SIGINT, SIG_IGN);
+    signal(SIGINT, chtcher);
     while (1)
     {
         printf("%s>", getcwd(NULL, 0));
