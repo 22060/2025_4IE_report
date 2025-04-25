@@ -15,6 +15,7 @@ int main()
     char *arg1 = NULL;
     char *strs[BUFSIZ];
     int i = 0;
+    char buf2[BUFSIZ];
     signal(SIGINT, SIG_IGN);
     while (1)
     {
@@ -44,18 +45,25 @@ int main()
         {
             if (strcmp(strs[0], "k") == 0)
             {
-                kill(atoi(strs[1]), SIGINT);
-                exit(0);
+                exit(kill(atoi(strs[1]), SIGINT));
             }
             else if (strcmp(strs[0], "s") == 0)
             {
-                kill(atoi(strs[1]), SIGSTOP);
-                exit(0);
+                exit(kill(atoi(strs[1]), SIGSTOP));
             }
             else if (strcmp(strs[0], "c") == 0)
             {
-                kill(atoi(strs[1]), SIGCONT);
-                exit(0);
+                exit(kill(atoi(strs[1]), SIGCONT));
+            }
+            if (execv(strs[0], strs) == -1)
+            {
+                strcpy(buf2, "/usr/bin/");
+                strcat(buf2, strs[0]);
+                if (execv(buf2, strs) == -1)
+                {
+                    perror("execv");
+                    exit(1);
+                }
             }
             exit(execv(strs[0], strs));
         }
