@@ -25,11 +25,20 @@ void INT_IRQ0()
 {
     INTC.IRQSR.BIT.IRQ0F = 0; // 割り込み要求をクリア
 
+    // if (INTC.IRQSR.BIT.IRQ0L == 1)
+    //     // IRQ0端子 = 1 ... SW4 押されている
+    //     LED6 = LED_ON;
+    // else
+    //     LED6 = LED_OFF;
+}
+#pragma interrupt INT_IRQ1
+void INT_IRQ1()
+{
+    INTC.IRQSR.BIT.IRQ1F = 0; // 割り込み要求をクリア
+
     if (INTC.IRQSR.BIT.IRQ0L == 1)
-        // IRQ0端子 = 1 ... SW4 押されている
-        LED6 = LED_ON;
-    else
-        LED6 = LED_OFF;
+        // IRQ1端子 = 1 ... SW5 押されている
+        LED5 ^= 1;
 }
 
 // ------------------------------------------------------------
@@ -38,9 +47,13 @@ void INT_IRQ0()
 void main()
 {
     PFC.PEIORL.BIT.B11 = 1;    // PE11(LED6)端子を出力モードに設定
+    PFC.PEIORL.BIT.B9 = 1;     // PE9(LED5)端子を出力モードに設定
     PFC.PDCRH1.BIT.PD16MD = 2; // PD16(SW4)端子をIRQ0入力に設定
+    PFC.PDCRH1.BIT.PD17MD = 2; // PD17(SW5)端子をIRQ1入力に設定
     INTC.IRQCR.BIT.IRQ0S = 3;  // 立ち上がり、立下りの両エッジ
-    INTC.IPRA.BIT._IRQ0 = 15;  // 割り込み優先レベル = 8
+    INTC.IRQCR.BIT.IRQ1S = 2;  // 立ち上がり、立下りの両エッジ
+    INTC.IPRA.BIT._IRQ0 = 8;   // 割り込み優先レベル = 8
+    INTC.IPRA.BIT._IRQ1 = 9;   // 割り込み優先レベル = 8
 
     set_imask(7); // マスクビット = 7
 
@@ -48,9 +61,7 @@ void main()
 
     printf("-- USE INT --\n");
     while (1)
-    {
-        printf("SW4 = %d\n", SW4);
-    }
+        ;
 }
 
 // ------------------------------------------------------------

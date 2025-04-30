@@ -9,7 +9,7 @@ double f(double x)
 }
 int main(void)
 {
-    double h = 0.1;
+    double h = 0.5;
     double x = 0.0;
     double y = 0.5;
     double k1 = 0.0;

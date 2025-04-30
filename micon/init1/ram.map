@@ -1,0 +1,38 @@
+OUTPUT_FORMAT("elf32-sh")
+OUTPUT_ARCH(sh)
+MEMORY
+{
+  ram : org = 0x04000000, l = 512k
+  iram : org = 0x0ffff4000, l = 32k
+}
+SECTIONS
+{
+  .text 0x04000000 :
+  {
+	_stext = . ;
+	*(.vector)
+	*(.text)
+	*(.strings)
+	*(.rodata*)
+	_etext = . ; 
+  } >ram
+  .data :
+  {
+	_sdata = . ;
+	*(.data)
+	_edata = . ; 
+  } >ram
+  .bss :
+  {
+	_sbss = . ;
+	*(.bss)
+	*(COMMON)
+	_ebss = . ;
+	_end = . ;
+  } >ram
+  .stack 0xffff4000 :
+  {
+	_stack = . ; 
+	*(.stack)
+  } >iram
+}
