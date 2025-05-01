@@ -12,13 +12,13 @@ int main(void)
 {
     double x = 0.0;
     double y = 0.5;
-    double h = 0.1;
+    double h = 0.5;
     double k1 = 0.0;
     double k2 = 0.0;
     double k3 = 0.0;
     double k4 = 0.0;
 
-    for (int i = 1; i < 21; i++)
+    for (int i = 1; i < 5; i++)
     {
         k1 = h * func(x, y);
         k2 = h * func(x + h / 2, y + k1 / 2);

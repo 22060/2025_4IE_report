@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>4IE2_課題</title>
+    <meta name="description" content="課題提出用のページ" />
+    <meta name="robots" content="noindex,nofollow">
+    <meta name=”author” content="ryutokojou">
+    <style>
+        .title {
+            font-size: 30px;
+            margin: auto;
+            text-decoration: none;
+            color: #fd1d1d;
+        }
+
+        .label {
+            display: flex;
+            justify-content: space-between;
+            height: 60px;
+            background-color: rgb(194, 241, 255);
+            margin: 0;
+        }
+
+        .menu-btn {
+            position: fixed;
+            top: 10px;
+            /* right: 10px; */
+            left: 10px;
+            display: flex;
+            height: 40px;
+            width: 40px;
+            justify-content: center;
+            align-items: center;
+            z-index: 90;
+            background-color: #3584bb;
+        }
+
+        .menu-btn span,
+        .menu-btn span:before,
+        .menu-btn span:after {
+            content: '';
+            display: block;
+            height: 3px;
+            width: 25px;
+            border-radius: 3px;
+            background-color: #ffffff;
+            position: absolute;
+            transition: all 0.5s;
+            /*アニメーション設定*/
+        }
+
+        .menu-btn span:before {
+            bottom: 8px;
+        }
+
+        .menu-btn span:after {
+            top: 8px;
+        }
+
+        #menu-btn-check:checked~.menu-btn span {
+            background-color: rgba(255, 255, 255, 0);
+            /*メニューオープン時は真ん中の線を透明にする*/
+        }
+
+        #menu-btn-check:checked~.menu-btn span::before {
+            bottom: 0;
+            transform: rotate(45deg);
+        }
+
+        #menu-btn-check:checked~.menu-btn span::after {
+            top: 0;
+            transform: rotate(-45deg);
+        }
+
+        #menu-btn-check {
+            display: none;
+        }
+
+        .menu-content {
+            width: 30%;
+            height: 100%;
+            position: fixed;
+            top: 0;
+            right: 100%;
+            /*leftの値を変更してメニューを画面外へ*/
+            z-index: 80;
+            background-color: #3584bb;
+            transition: all 0.5s;
+            /*アニメーション設定*/
+        }
+
+        #menu-btn-check:checked~.menu-content {
+            right: 70%;
+            /*メニューを画面内へ*/
+        }
+
+
+        .menu-content ul {
+            padding: 60px 10px 0;
+        }
+
+        .menu-content ul li {
+            border-bottom: solid 1px #ffffff;
+        }
+
+        .menu-content ul li a {
+            display: block;
+            /* height: 25px; */
+            width: 100%;
+            font-size: 15px;
+            color: #ffffff;
+            text-decoration: none;
+            position: relative;
+        }
+
+        body {
+            margin: 0;
+        }
+
+        #statup {
+            margin: 0;
+            flex-direction: row;
+            gap: 80px;
+            justify-content: end;
+            margin: 0 auto;
+            /* padding: 130px 0 100px 0; */
+        }
+
+        .statup-content {
+            display: flex;
+            justify-content: center;
+        }
+
+        /* .statup-account {
+            display: flex;
+            flex-direction: column;
+        } */
+
+        .a {
+            text-align: center;
+            font-size: 30px;
+            margin: 10px;
+            background-color: rgb(167, 255, 159);
+            border-radius: 10px 10px 10px 10px;
+            text-decoration: none;
+            color: black;
+        }
+
+        .wrap {
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            flex-flow: column;
+            height: 100%;
+        }
+
+        .between {
+            -webkit-box-pack: justify;
+            -ms-flex-pack: justify;
+            justify-content: space-between;
+        }
+
+
+        tr {
+            max-height: 100px;
+        }
+
+        .switch {
+            position: relative;
+        }
+
+        .circle {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 24px;
+            height: 24px;
+            border-radius: 12px;
+            background-color: gray;
+            transition: 0.5s;
+        }
+
+        input:checked~.circle {
+            transform: translateX(100%);
+            background-color: blue;
+        }
+
+        .base {
+            width: 56px;
+            border-radius: 16px;
+            height: 32px;
+            background-color: #ddd;
+            transition: 0.5s;
+        }
+
+        input:checked~.base {
+            background-color: rgb(219, 234, 254);
+        }
+
+        input[type='checkbox'] {
+            position: absolute;
+            width: 0;
+            height: 0;
+        }
+
+        body {
+            background-color: rgb(233, 245, 139);
+            color: #ef8952;
+        }
+
+        .wrap {
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            flex-flow: column;
+            height: 100%;
+        }
+
+        .between2 {
+            display: flex;
+        }
+    </style>
+</head>
+
+<body id="body">
+    <label class="label">
+        <div class="hamburger-menu">
+            <input type="checkbox" id="menu-btn-check">
+            <label for="menu-btn-check" class="menu-btn"><span></span></label>
+            <div class="menu-content">
+                <div class="wrap between">
+                    <ul>
+                        <li>
+                            <a href="https://google.com" target="_blank">google(新しいタブで開きます)</a>
+                        </li>
+                        <li>
+                            <a href="https://yahoo.co.jp">yahoo(新しいタブで開きません)</a>
+                        </li>
+                    </ul>
+                    <label>
+                        <a style="max-width: 10%;">背景の色を切り替えます</a>
+                        <div class="switch">
+                            <input type="checkbox" nama="#" value="1" id="color">
+                            <div class="circle"></div>
+                            <div class="base"></div>
+                        </div>
+                    </label>
+                    <div>
+                        <form action="https://www.google.com/search" method="get" style="max-width: 100%;">
+                            <input type="text" name="q" placeholder="Googleで検索" style="max-width: 80%;">
+                            <input type="submit" value="検索">
+                        </form>
+                    </div>
+                    <a
+                        style="margin-bottom: 50px;margin-left: 10px;">これはハンバーガーメニューです。ここにいろいろなリンクを配置してみました。ついでにformの仕様を使用してgoogleで検索できるようにしました</a>
+                </div>
+            </div>
+        </div>
+        <a class="title" href="./html-ex.html">じゃんけんgame</a>
+        <div id="account"></div>
+    </label>
+    <!-- コンテンツ開始 -->
+    <div id="statup">
+        <label class="statup-content">
+            <!-- <img style="width: 100px;" src="https://4.bp.blogspot.com/-81zWau2UMXI/WtRyqtW5CSI/AAAAAAABLgo/oXLhBORbiN4AvvDid9AnfdXnd5IQDmcQQCLcBGAs/s800/book_watoji.png"> -->
+            <div class="statup-account">
+                <hr>
+                <h2>テーブルを作成しました</h2>
+                <hr>
+                <b>じゃんけんの出す手と呼び方、また強さの関係を解説します</b>
+                <ul>
+                    <li>じゃんけんは、グー、チョキ、パーの3つの手を使って行うゲームです。</li>
+                    <li>それぞれの手には、強さの関係があります。</li>
+                    <li>グーは石、チョキははさみ、パーは紙と呼ばれます。</li>
+                    <li>グーはチョキに勝ち、チョキはパーに勝ち、パーはグーに勝ちます。</li>
+                </ul>
+                <table border="1" style="border-collapse: collapse;">
+                    <tr>
+                        <th>手</th>
+                        <th>呼び方</th>
+                        <th>強さ関係</th>
+                    </tr>
+                    <tr>
+                        <td><img style="height: 80px;"
+                                src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiusq_ptNOOC9XkVvWTa88nhB6I7n12fsf95zdnS-n269HpN9dVRd0JCCV0iL2u_tWrDU5XySM8-i9u38-tXp0Wgu6qRF4p-5A1djjVskwkB0SQFxULDss8Uj1o7CYfbMNRpT-kfn3cG4E/s220/janken_gu.png">
+                        </td>
+                        <td>グー</td>
+                        <td>これは<b>石</b>なので紙に負けてはさみに勝ちます。</td>
+                    </tr>
+                    <tr>
+                        <td><img style="height: 80px;"
+                                src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhSYYvy3_ZU5FYb8Jug1Gssh483SEIn8hSwWO33rp-7j9m5AFsn9Fyis9oT1DKvykpCEMV6bJGMAaTtABep-1qqr9ZPtiI_aQQsJVWNL6H_i-b6I3O_1-dgwmavPoEI9HHMsuHHPQCHj90/s800/janken_choki.png">
+                        </td>
+                        <td>チョキ</td>
+                        <td>これは<b>はさみ</b>なので石に負けて紙に勝ちます</td>
+                    </tr>
+                    <tr>
+                        <td><img style="height: 80px;"
+                                src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhQhsfUvWhhVJej7FEqYsQbe0EwLCOHYxKU4KnrF026nnfJkiM3yQO2NFmnnX0nD4P2IdCmg8qFQpZMW8vtbs-K7sLpoCqXwO0fkTT7UL5VkM-E2MOUNXpikYfspDKaxidAehqcuQoIrcM/s800/janken_pa.png">
+                        </td>
+                        <td>パー</td>
+                        <td>これは<b>紙</b>なので石に勝ってはさみに負けます</td>
+                    </tr>
+                </table>
+                <span style="height: 30px;"></span>
+                <hr>
+                <h1>じゃんけんアップデートV1の案を募集中!!!</h1>
+                <div>
+                    <form action="/" method="get" id="form" class="wrap between">
+                        <textarea name="text" rows="4" cols="40" placeholder="じゃんけんのアップデート案を記入してください"
+                            id="form"></textarea>
+                        <input type="text" name="name" placeholder="名前を記入してください">
+                        <div>
+                            <input type="radio" name="num_of_inq" value="男" id="form1" checked><a for="form1">男</a>
+                            <input type="radio" name="num_of_inq" value="女" id="form2"><a for="form2">女</a>
+                            <input type="radio" name="num_of_inq" value="回答無し" id="form3"><a for="form3">回答無し</a>
+                        </div>
+                        <select name="age">
+                            <option value="10代">10代</option>
+                            <option value="20代">20代</option>
+                            <option value="30代">30代</option>
+                            <option value="40代">それ以外</option>
+                        </select>
+                        <div class="between2">
+                            <input type="submit" value="送信">
+                            <input type="reset" value="リセット">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </label>
+    </div>
+</body>
+<script>
+    const body = document.getElementById('body');
+    const color = document.getElementById('color');
+    color.addEventListener('change', function () {
+        if (this.checked) {
+            body.style.backgroundColor = 'rgb(167, 255, 159)';
+        } else {
+            body.style.backgroundColor = 'rgb(233, 245, 139)';
+        }
+    });
+</script>
+
+</html>
