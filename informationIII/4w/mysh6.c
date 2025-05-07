@@ -104,16 +104,6 @@ int main()
                         close(pipe_fd[1]);
                         dup2(pipe_fd[0], 0);
 
-                        if (strcmp(strs[pipeindex + 1], "ls") == 0)
-                        {
-                            strcpy(buf2, "--color=always");
-                            strs[i] = buf2;
-                        }
-                        else if (strcmp(strs[pipeindex + 1], "grep") == 0)
-                        {
-                            strcpy(buf2, "--color=always");
-                            strs[i] = buf2;
-                        }
                         childlen(&(strs[pipeindex + 1]));
                     }
                     else
@@ -127,16 +117,6 @@ int main()
             {
                 if (childpid1 == 0)
                 {
-                    if (strcmp(strs[0], "ls") == 0)
-                    {
-                        strcpy(buf2, "--color=always");
-                        strs[i] = buf2;
-                    }
-                    else if (strcmp(strs[0], "grep") == 0)
-                    {
-                        strcpy(buf2, "--color=always");
-                        strs[i] = buf2;
-                    }
                     childlen(strs);
                 }
             }
