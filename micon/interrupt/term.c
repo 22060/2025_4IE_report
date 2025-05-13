@@ -1,183 +1,120 @@
 #include <windows.h>
 #include <stdio.h>
-#include <stdlib.h>
+#include <conio.h>
 #include <string.h>
-#include <signal.h>
 
-// char *PORT "COM3"      // 使用するシリアルポート
-#define BAUDRATE 12500 // ボーレート
+#define PORT_NAME "COM3"
+#define BAUDRATE CBR_38400
+#define FILE_BUFFER_SIZE 1024
+
 HANDLE hSerial;
-HANDLE
-open_serial_port(const char *port_name)
-{
-    HANDLE hSerial = CreateFile(
-        port_name,
-        GENERIC_READ | GENERIC_WRITE,
-        0,
-        NULL,
-        OPEN_EXISTING,
-        0,
-        NULL);
+HANDLE hThread;
+volatile int running = 1;
+char filepath[256];
 
+DWORD WINAPI read_serial(LPVOID lpParam)
+{
+    char buf[FILE_BUFFER_SIZE];
+    DWORD bytesRead;
+
+    while (running)
+    {
+        if (ReadFile(hSerial, buf, sizeof(buf) - 1, &bytesRead, NULL) && bytesRead > 0)
+        {
+            buf[bytesRead] = '\0';
+            printf("%s", buf);
+            fflush(stdout);
+        }
+    }
+    return 0;
+}
+
+void send_file(const char *path)
+{
+    FILE *fp = fopen(path, "r");
+    if (!fp)
+    {
+        printf("❌ Failed to open file: %s\n", path);
+        return;
+    }
+
+    printf("🔁 Sending .mot file: \"%s\"...\n", path);
+    PurgeComm(hSerial, PURGE_RXCLEAR); // Clear input buffer
+    DWORD written;
+    WriteFile(hSerial, "l\r", 2, &written, NULL); // Send reset signal
+
+    char line[FILE_BUFFER_SIZE];
+    char buffer[FILE_BUFFER_SIZE];
+    size_t filesize = 0;
+    OVERLAPPED osWrite = {0};
+    osWrite.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+    WriteFile(hSerial, buffer, filesize, NULL, &osWrite);
+
+    fclose(fp);
+    printf("✅ File transmission complete.\n");
+}
+
+int main(int argc, char *argv[])
+{
+    if (argc != 2)
+    {
+        printf("Usage: flash_and_terminal.exe yourfile.mot\n");
+        return 1;
+    }
+    strncpy(filepath, argv[1], sizeof(filepath));
+
+    hSerial = CreateFileA(PORT_NAME, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
     if (hSerial == INVALID_HANDLE_VALUE)
     {
-        fprintf(stderr, "❌ シリアルポートエラー: %s\n", port_name);
-        return INVALID_HANDLE_VALUE;
+        printf("❌ Failed to open serial port: %s\n", PORT_NAME);
+        return 1;
     }
 
     DCB dcbSerialParams = {0};
     dcbSerialParams.DCBlength = sizeof(dcbSerialParams);
 
-    if (!GetCommState(hSerial, &dcbSerialParams))
-    {
-        fprintf(stderr, "❌ シリアルポート設定取得エラー\n");
-        CloseHandle(hSerial);
-        return INVALID_HANDLE_VALUE;
-    }
-
+    GetCommState(hSerial, &dcbSerialParams);
     dcbSerialParams.BaudRate = BAUDRATE;
     dcbSerialParams.ByteSize = 8;
     dcbSerialParams.StopBits = ONESTOPBIT;
     dcbSerialParams.Parity = NOPARITY;
-
-    if (!SetCommState(hSerial, &dcbSerialParams))
-    {
-        fprintf(stderr, "❌ シリアルポート設定エラー\n");
-        CloseHandle(hSerial);
-        return INVALID_HANDLE_VALUE;
-    }
+    SetCommState(hSerial, &dcbSerialParams);
 
     COMMTIMEOUTS timeouts = {0};
     timeouts.ReadIntervalTimeout = 50;
     timeouts.ReadTotalTimeoutConstant = 50;
     timeouts.ReadTotalTimeoutMultiplier = 10;
-    timeouts.WriteTotalTimeoutConstant = 50;
-    timeouts.WriteTotalTimeoutMultiplier = 10;
+    SetCommTimeouts(hSerial, &timeouts);
 
-    if (!SetCommTimeouts(hSerial, &timeouts))
-    {
-        fprintf(stderr, "❌ シリアルポートタイムアウト設定エラー\n");
-        CloseHandle(hSerial);
-        return INVALID_HANDLE_VALUE;
-    }
+    printf("\n=== Terminal Mode Started ===\nPress Ctrl+C to exit\n\n");
 
-    return hSerial;
-}
-
-void send_file(HANDLE hSerial, const char *filepath)
-{
-    printf("🔁 .mot ファイル「%s」を送信中...\n", filepath);
-    FILE *file = fopen(filepath, "r");
-    if (!file)
-    {
-        perror("ファイルを開けません");
-        return;
-    }
-
-    char line[256];
-    DWORD bytes_written;
-    while (fgets(line, sizeof(line), file))
-    {
-        // 改行文字を削除
-        line[strcspn(line, "\r\n")] = '\0';
-        strcat(line, "\r"); // CRを追加
-        if (!WriteFile(hSerial, line, strlen(line), &bytes_written, NULL))
-        {
-            fprintf(stderr, "❌ データ送信エラー\n");
-            break;
-        }
-        printf("送信中: %s\n", line);
-    }
-
-    fclose(file);
-    printf("書き込み完了。\n");
-}
-DWORD WINAPI OtherTask(LPVOID lpParam)
-{
-    HANDLE hSerial = (HANDLE)lpParam; // 受け取った引数を HANDLE に変換
-
-    char cmd[256];
-    // 例：シリアルポートに何か書き込む（実際の用途に応じて変更）
-    while (1)
-    {
-        if (!ReadFile(hSerial, cmd, strlen(cmd), &bytes_written, NULL))
-        {
-            fprintf(stderr, "❌ コマンド受信エラー\n");
-        }
-        printf("受信: %s\n", cmd);
-    }
-
-    return 0;
-}
-
-void serial_terminal(HANDLE hSerial, const char *filepath)
-{
-    printf("\n=== ターミナルモード開始 ===\n");
-    printf("Ctrl+C で終了\n\n");
-
-    char cmd[256];
-    DWORD bytes_written;
-
-    HANDLE hThread = CreateThread(
-        NULL,
-        0,
-        OtherTask,
-        (LPVOID)hSerial, // ← ここで渡す！
-        0,
-        NULL);
-
-    if (hThread == NULL)
-    {
-        printf("Failed to create thread\n");
-        CloseHandle(hSerial);
-        return 1;
-    }
+    hThread = CreateThread(NULL, 0, read_serial, NULL, 0, NULL);
 
     while (1)
     {
-
-        if (fgets(cmd, sizeof(cmd), stdin))
+        char input[256];
+        if (_kbhit())
         {
-            cmd[strcspn(cmd, "\r\n")] = '\0'; // 改行文字を削除
-            if (strcmp(cmd, "l") == 0)
+            fgets(input, sizeof(input), stdin);
+            input[strcspn(input, "\r\n")] = 0; // Strip newline
+
+            if (strcmp(input, "l") == 0)
             {
-                send_file(hSerial, filepath);
+                send_file(filepath);
             }
-            strcat(cmd, "\r"); // CRを追加
-            if (!WriteFile(hSerial, cmd, strlen(cmd), &bytes_written, NULL))
+            else
             {
-                fprintf(stderr, "❌ コマンド送信エラー\n");
+                char cmdWithCR[258];
+                snprintf(cmdWithCR, sizeof(cmdWithCR), "%s\r", input);
+                DWORD written;
+                WriteFile(hSerial, cmdWithCR, strlen(cmdWithCR), &written, NULL);
             }
         }
     }
-}
-void catcher(int sig)
-{
-    printf("\n\nCtrl+C が押されました。終了します。\n");
+
+    running = 0;
+    WaitForSingleObject(hThread, INFINITE);
+    CloseHandle(hThread);
     CloseHandle(hSerial);
-    exit(0);
-}
-int main(int argc, char *argv[])
-{
-    signal(SIGINT, catcher); // Ctrl+Cを無視
-    if (argc != 3)
-    {
-        fprintf(stderr, "使い方: %s yourfile.mot\n", argv[0]);
-        return 1;
-    }
-
-    const char *filepath = argv[1];
-    const char *PORT = argv[2]; // コマンドライン引数からポート名を取得
-    while (1)
-    {
-        hSerial = open_serial_port(PORT);
-        if (hSerial == INVALID_HANDLE_VALUE)
-        {
-            return 1;
-        }
-
-        serial_terminal(hSerial, filepath);
-    }
-
     return 0;
 }

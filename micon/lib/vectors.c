@@ -7,6 +7,8 @@
 void vect0(void);
 void INT_IRQ0(void);
 void INT_IRQ1(void);
+void INT_CMT0_CMI0(void);
+void INT_CMT1_CMI1(void);
 
 struct vtable_t
 {
@@ -199,11 +201,11 @@ struct vtable_t
     null_int,
     null_int,
     null_int,
-    null_int, /*	CMT0 CMI0 */
-    null_int, /* 185 */
+    INT_CMT0_CMI0, /*	CMT0 CMI0 */
+    null_int,      /* 185 */
     null_int,
     null_int,
-    null_int, /*	CMT1 CMI1 */
+    INT_CMT1_CMI1, /*	CMT1 CMI1 */
     null_int,
     null_int, /* 190 */
     null_int,

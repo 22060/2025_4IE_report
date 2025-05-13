@@ -4,9 +4,9 @@
 double f1(double x, double y1, double y2);
 double f2(double x, double y1, double y2);
 double fy(double x);
-double a = 0.3;
-double b = 3.0;
-double c = 1.3;
+double a = 2;
+double b = 1.0;
+double c = 3.0;
 double d = 1.0;
 double h = 0.01;
 int main(void)
@@ -16,7 +16,7 @@ int main(void)
     double x = 0, y1 = 5.0, y2 = 1.0;
     double mem = 0.0;
     printf("# x,y1,y2\n");
-    for (int i = 0; i < 50; i++)
+    for (int i = 0; i < 5000; i++)
     {
         mem = y1 + h * f1(x, y1, y2);
         y2 += h * f2(x, y1, y2);

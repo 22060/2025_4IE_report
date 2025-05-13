@@ -79,3 +79,4 @@ EOF
 echo "✅ ${DIR}/ に ${TGT}.c と Makefile を生成しました！"
 
 cp ./libmemes.h ./${TGT}/libmemes.h
+cp ./bbb.py ./${TGT}/bbb.py
