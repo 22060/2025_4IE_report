@@ -4,9 +4,7 @@ i = 1
 until count > 19 do
     i += 1
     for j in 2..100 do
-        if i == j
-            break
-        end
+        break if i == j
         if i % j == 0
             result = 1
             break

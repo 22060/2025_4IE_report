@@ -1,8 +1,13 @@
 def calc(h,w)
     w / h / h
 end
-
-case calc(1.70,70)
+print "身長(m):"
+height = gets.chomp.to_f
+print "体重(kg):"
+weight = gets.chomp.to_f
+bmi = calc(height, weight)
+puts "BMI:#{bmi}"
+case bmi
 when 40.0..100.0
     puts "肥満（4度）"
 when 35.0..40.0
