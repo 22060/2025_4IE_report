@@ -93,17 +93,360 @@
 
 \section{要旨}
 % 結果等を入れて三行程度でミニレポートを書く
-目的として、
-ねじれ振り子の周期を測定して、針金の剛性率を求める。また慣性モーメントの意味を理解して、回転の運動方程式の意味を知る。
+ねじれ振り子の周期を測定して、針金の剛性率を求めることと，慣性モーメントについて知ることを目的とする．
+慣性モーメントが異なる重りを吊るして針金を中心軸とした
+回転振動をさせ，周期を測定した。これにより針金1の剛性率$n_1$は$3.60G[\mathrm{N/m^2}]$，
+針金2の剛性率$n_2$は$7.38G[\mathrm{N/m^2}]$というデータを得た．よって針金1は黄銅，
+針金2は鋼であることがわかった．
 \section{目的}
 % 何を測定して、どのような意味があるのかを書く
+ねじれ振り子の周期と慣性モーメント，また針金の直系，長さをもとめる．それにより，針金の合成率を求めることが出来る．
 \section{実験手順}
 % 実験指導書のページを参照で良い。しかし違うものをした場合は再現できるほど細かく書く
+本実験は実験指導書pp.44-48を参考にして行う．しかし周期の測定で時間がかかるため，5周期ごとの時間を5回測定し，
+その平均値を求める．
+
 \section{実験結果}
 % 表/グラフを用いて実験で得たデータを示し、目的とする物理量を求める。最低限有効数字を意識して、さらには不確かさを表示すること
+実験手順をもとに実験を行ったため，その順番に実験によって得られたデータを記載し地区．ただし$T_1$と$T_2$の計測は実験指導書の通りにやると時間がかかるため，
+5周期ごとの時間を5回測定し，その平均値を求める．
+\subsection{$T_1$と$T_2$の測定}
+% 針金1の周期T1とT2を測定する
+$T_1$は円環を地面と水平に設置した場合の周期であり，$T_2$は円環を地面と垂直に設置した場合の周期である．
+\subsection{針金1の周期T$_1$とT$_2$}
+針金1を使用して得られたデータを表\ref{tab:metal1T1}，表\ref{tab:metal1T2}に示す．
+平均値をとり，一周期にスケーリングを行うと$T_1$は$14.752[\mathrm{sec}]$，$T_2$は$10.937[\mathrm{sec}]$である．
+\begin{table}[H]
+  \centering
+  \caption{周期$T_1$}
+  \label{tab:metal1T1}
+
+  \begin{tabular}{c|c|c|c|c}
+    \hline
+    回数 & 時刻$t_1$ & 回数 & 時刻$t_2$ & $30 \times T_1 = 2 \times (t_2 - t_1)$ \\
+    \hline
+    0  & 00.00秒  & 30 & 221.27秒 & 442.54秒                                \\
+    \hline
+    10 & 73.65秒  & 40 & 294.95秒 & 442.60秒                                \\
+    \hline
+    20 & 147.44秒 & 50 & 368.72秒 & 442.56秒                                \\
+    \hline
+  \end{tabular}
+\end{table}
+\begin{table}[H]
+  \centering
+  \caption{周期$T_2$}
+  \label{tab:metal1T2}
+
+  \begin{tabular}{c|c|c|c|c}
+    \hline
+    回数 & 時刻$t_1$ & 回数 & 時刻$t_2$ & $30 \times T_2 = 2 \times (t_2 - t_1)$ \\
+    \hline
+    0  & 00.00秒  & 30 & 164.07秒 & 328.14秒                                \\
+    \hline
+    10 & 54.66秒  & 40 & 218.81秒 & 328.30秒                                \\
+    \hline
+    20 & 109.43秒 & 50 & 273.38秒 & 327.90秒                                \\
+    \hline
+  \end{tabular}
+\end{table}
+\subsection{針金2の周期T$_3$とT$_4$}
+針金2を使用して得られたデータを表\ref{tab:metal2T3}，表\ref{tab:metal2T4}に示す．
+平均値をとり，一周期にスケーリングを行うと$T_3$は$9.140[\mathrm{sec}]$，$T_4$は$6.778[\mathrm{sec}]$である．
+\begin{table}[H]
+  \centering
+  \caption{周期$T_3$}
+  \label{tab:metal2T3}
+
+  \begin{tabular}{c|c|c|c|c}
+    \hline
+    回数 & 時刻$t_1$ & 回数 & 時刻$t_2$ & $30 \times T_3 = 2 \times (t_2 - t_1)$ \\
+    \hline
+    0  & 00.00秒  & 30 & 137.21秒 & 274.42秒                                \\
+    \hline
+    10 & 45.74秒  & 40 & 182.93秒 & 274.38秒                                \\
+    \hline
+    20 & 91.51秒  & 50 & 228.42秒 & 273.82秒                                \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \caption{周期$T_4$}
+  \label{tab:metal2T4}
+
+  \begin{tabular}{c|c|c|c|c}
+    \hline
+    回数 & 時刻$t_1$ & 回数 & 時刻$t_2$ & $30 \times T_4 = 2 \times (t_2 - t_1)$ \\
+    \hline
+    0  & 00.00秒  & 30 & 101.59秒 & 203.18秒                                \\
+    \hline
+    10 & 33.97秒  & 40 & 135.96秒 & 203.98秒                                \\
+    \hline
+    20 & 67.84秒  & 50 & 169.29秒 & 202.90秒                                \\
+    \hline
+  \end{tabular}
+\end{table}
+\subsection{針金の長さ測定}
+針金の長さ(=$l_1$，$l_2$)を測定した．これは上下の固定器具の長さを測ったものである．
+$l_1$と$l_2$の測定結果を表\ref{tab:metal1l1}に示す．
+\begin{table}[H]
+  \centering
+  \caption{針金1の長さと半径}
+  \label{tab:metal1l1}
+
+  \begin{tabular}{c|c}
+    \hline
+    種類  & 長さ$l[\mathrm{m}]$ \\
+    \hline
+    針金1 & $0.855\mathrm{m}$ \\
+    \hline
+    針金2 & $0.785\mathrm{m}$ \\
+    \hline
+  \end{tabular}
+\end{table}
+\subsection{針金の半径測定}
+針金の半径(=$a_1$，$a_2$)を測定した．
+半径を直接測ることはできないため，直径を3箇所で測定し平均を導出し，2で割ることで半径を求めた．
+針金1の直径の測定結果を表\ref{tab:metal1a1}に示す．平均は$0.9907 \times 10^{-3}\mathrm{m}$である．よって針金1の半径は
+$a_1 = 0.4953 \times 10^{-3}\mathrm{m}$である．
+$a_2$の測定結果を表\ref{tab:metal2a1}に示す．平均は$1.030 \times 10^{-3}\mathrm{m}$である．よって針金2の半径は
+$a_2 = 0.515 \times 10^{-3}\mathrm{m}$である．
+\begin{table}[H]
+  \centering
+  \caption{針金1の半径}
+  \label{tab:metal1a1}
+
+  \begin{tabular}{c|c}
+    \hline
+    回数 & 直径$a[\mathrm{m}]$                \\
+    \hline
+    1  & $0.978 \times 10^{-3}\mathrm{m}$ \\
+    \hline
+    2  & $1.000 \times 10^{-3}\mathrm{m}$ \\
+    \hline
+    3  & $0.994 \times 10^{-3}\mathrm{m}$ \\
+    \hline
+  \end{tabular}
+\end{table}
+\begin{table}[H]
+  \centering
+  \caption{針金2の半径}
+  \label{tab:metal2a1}
+
+  \begin{tabular}{c|c}
+    \hline
+    回数 & 直径$a[\mathrm{m}]$                \\
+    \hline
+    1  & $1.030 \times 10^{-3}\mathrm{m}$ \\
+    \hline
+    2  & $1.030 \times 10^{-3}\mathrm{m}$ \\
+    \hline
+    3  & $1.030 \times 10^{-3}\mathrm{m}$ \\
+    \hline
+  \end{tabular}
+\end{table}
+\subsection{円環の内径，外径，厚さ，重量}
+% 円環の内径，外径，厚さ，重量を測定する
+円環の内径$b$，外径$c$，厚さ$d$，重量$M$を測定した．
+内径の測定結果を表\ref{tab:enkanb}に示す．平均値をとって内直径は$129.8 \times 10^{-3}\mathrm{m}$である．よって内半径$b$は
+$b = 0.6490 \mathrm{m}$である．
+外径の測定結果を表\ref{tab:enkand}に示す．平均値をとって外直径は$190.0 \times 10^{-3}\mathrm{m}$である．よって外半径$c$は
+$c = 0.9500 \mathrm{m}$である．
+厚さの測定結果を表\ref{tab:enkanc}に示す．平均値をとって厚さは$29.156 \times 10^{-3}\mathrm{m}$である．よって厚さ$d$は
+$d = 0.029156 \mathrm{m}$である．
+重量$m$は$3.056\mathrm{kg}$である．
+\begin{table}[H]
+  \centering
+  \caption{円環の内径}
+  \label{tab:enkanb}
+
+  \begin{tabular}{c|c}
+    \hline
+    回数 & 内径$b[\mathrm{m}]$                \\
+    \hline
+    1  & $129.9 \times 10^{-3}\mathrm{m}$ \\
+    \hline
+    2  & $129.6 \times 10^{-3}\mathrm{m}$ \\
+    \hline
+    3  & $129.8 \times 10^{-3}\mathrm{m}$ \\
+    \hline
+  \end{tabular}
+\end{table}
+\begin{table}[H]
+  \centering
+  \caption{円環の外径}
+  \label{tab:enkand}
+
+  \begin{tabular}{c|c}
+    \hline
+    回数 & 外径$c[\mathrm{m}]$                \\
+    \hline
+    1  & $190.0 \times 10^{-3}\mathrm{m}$ \\
+    \hline
+    2  & $190.0 \times 10^{-3}\mathrm{m}$ \\
+    \hline
+    3  & $190.0 \times 10^{-3}\mathrm{m}$ \\
+    \hline
+  \end{tabular}
+\end{table}
+\begin{table}[H]
+  \centering
+  \caption{円環の厚さ}
+  \label{tab:enkanc}
+
+  \begin{tabular}{c|c}
+    \hline
+    回数 & 厚さ$d[\mathrm{m}]$                 \\
+    \hline
+    1  & $29.156 \times 10^{-3}\mathrm{m}$ \\
+    \hline
+    2  & $29.156 \times 10^{-3}\mathrm{m}$ \\
+    \hline
+    3  & $29.156 \times 10^{-3}\mathrm{m}$ \\
+    \hline
+  \end{tabular}
+\end{table}
+\subsection{円環の慣性モーメント}
+% 円環の慣性モーメントを求める
+円環の慣性モーメントは式\eqref{eq:momentyoko}，式\eqref{eq:momenttate}より求めることができる．
+計測結果を式に代入すると，式\eqref{eq:momentkekka1}，式\eqref{eq:momentkekka2}のようになる．
+\begin{align}
+  I_1 & = M \times \frac{b^2 + c^2}{2} \label{eq:momentyoko}                    \\
+  I_2 & = M \times (\frac{b^2 + c^2}{4} + \frac{d^2}{12}) \label{eq:momenttate}
+\end{align}
+\begin{align}
+  I_1 & = 3.056 \times (\frac{(64.88 \times 10^{-3})^2 + (95.00 \times 10^{-3})^2}{2}) = 2.022 \times 10^{-2} \mathrm{kg \cdot m^2}\label{eq:momentkekka1} \\
+  I_2 & = 3.056 \times (\frac{(64.88 \times 10^{-3})^2 + (95.00 \times 10^{-3})^2}{4} + \frac{(29.156 \times 10^{-3})^2}{12})                              \\
+      & = 1.032 \times 10^{-2} \mathrm{kg \cdot m^2}\label{eq:momentkekka2}
+\end{align}
+\subsection{針金の剛性率}
+% 針金の剛性率を求める
+針金の剛性率は式\eqref{eq:rigidity}より求めることができる．
+\begin{align}
+  n & = \frac{8 \pi I l}{a^4 T^2} \label{eq:rigidity}
+\end{align}
+ただし円環の吊り具や針金の固定具の慣性モーメント$I_0$を考慮すると式\eqref{eq:rigidity2}のようになる．
+
+\begin{align}
+  n & = \frac{8 \pi l (I_1 + I_0)}{a^4 T^2} \label{eq:rigidity2}
+\end{align}
+$I_0$は複雑な形状の実験器具の慣性モーメントのため求めることが出来ない．そのため，
+$T_1$と$T_2$を式\refeq{eq:rigidity2}に代入すると，数式\eqref{eq:rigidity3}，式\eqref{eq:rigidity4}のようになる．
+\begin{align}
+  T_1 ^2 & = \frac{8 \pi l (I_1 + I_0)}{a^4 n}\label{eq:rigidity3} \\
+  T_2 ^2 & = \frac{8 \pi l (I_2 + I_0)}{a^4 n}\label{eq:rigidity4}
+\end{align}
+式\eqref{eq:rigidity3}，式\eqref{eq:rigidity4}より$I_0$を消去すると，式\eqref{eq:rigidity5}のようになる．
+\begin{align}
+  n & = \frac{8 \pi l (I_1 - I_2)}{a^4 (T_1 ^2 - T_2 ^2)} \label{eq:rigidity5}
+\end{align}
+式\eqref{eq:rigidity5}に$T_1$，$T_2$，$I_1$，$I_2$を代入すると，式\eqref{eq:rigidity6}のようになる．
+\begin{align}
+  n & = \frac{8 \pi 0.855 (2.022 \times 10^{-2} - 1.032 \times 10^{-2})}{(0.4953 \times 10^{-3})^4 (14.752^2 - 10.937^2)} \label{eq:rigidity6}
+\end{align}
+式\eqref{eq:rigidity6}より針金1の剛性率$n_1$は$3.60G[\mathrm{N/m^2}]$である．
+同様に針金2の剛性率$n_2$は式\eqref{eq:rigidity7}のようになる．
+\begin{align}
+  n & = \frac{8 \pi 0.785 (2.022 \times 10^{-2} - 1.032 \times 10^{-2})}{(0.515 \times 10^{-3})^4 (9.140^2 - 6.778^2)} \label{eq:rigidity7}
+\end{align}
+式\eqref{eq:rigidity7}より針金2の剛性率$n_2$は$7.38G[\mathrm{N/m^2}]$である．
+
+
 \section{考察}
 % 実験結果から何がいえるかという問に答えるところ。実験結果が信頼できるのかを論理的に書く。実験指導書の課題もここで答える。新しい実験方法を披露できるとなおよい。最小二乗法は考察
+\subsection{針金の材質}
+針金の剛性率がわかったため，材質を調べることが出来る．
+針金1の剛性率は$3.604G[\mathrm{N/m^2}]$であるため，黄銅であることがわかる．
+針金2の剛性率は$7.382G[\mathrm{N/m^2}]$であるため，鋼であることがわかる．
+\subsection{実際の値との差}
+実際の材質の剛性率は表\ref{tab:material}に示す．この表を見ると黄銅の剛性率は$3.73G[\mathrm{N/m^2}]$でり，誤差が小さいことがわかる．
+しかし，剛性率を求める式では針金の半径が4乗されているため，少しの誤差が大きくなることがわかる．
+そのため平均値を求めて計算を行ったが計測点による差が$20μm$あるためこの値が近づいたのは奇跡に近いと思われる．
+実際に半径を$10μm$ずらして計算を行うと剛性率は$3.60G[\mathrm{N/m^2}]$から$4.25G[\mathrm{N/m^2}]$に変化する．
+針金2の剛性率は$7.8 - 8.4G[\mathrm{N/m^2}]$であるため，誤差が大きいことがわかる．この場合の誤差も$a$の誤差だと思われる．
+測定点による誤差が出た理由として針金が曲がっていて平は面での計測が出来なかったことが挙げられる．
+\begin{table}[H]
+  \centering
+  \caption{材質の剛性率}
+  \label{tab:material}
 
+  \begin{tabular}{c|c}
+    \hline
+    材質 & 剛性率$[G[\mathrm{N/m^2}]]$ \\
+    \hline
+    黄銅 & $3.73$                   \\
+    \hline
+    鋼  & $7.8 - 8.4$              \\
+    \hline
+  \end{tabular}
+\end{table}
+\subsection{実験指導書の課題}
+\subsubsection{慣性モーメント}
+微小慣性モーメントは式\eqref{eq:moment}より求めることができる．半径Rの球体の慣性モーメントを求めるために球体を円環でスライスして考える．
+質量 M，半径 $R_1$の密度が一様な薄い円板について，質量中心を通る回転軸のまわりの慣性モーメントを求めると式\eqref{eq:momentenkan}のようになる．
+\begin{align}
+  dI & = r^2 dm \label{eq:moment} \\
+     & = \rho \cdot dV \cdot r^2  \\
+\end{align}
+\begin{equation}
+  \label{eq:momentenkan}
+  \begin{aligned}
+    \rho & = \frac{M}{\pi {R_1}^2}                                                        \\
+    dm   & = \rho \cdot dV = \rho \cdot 2\pi r dr = \frac{M}{\pi {R_1}^2} \cdot 2\pi r dr \\
+         & = \frac{2M}{{R_1}^2} r dr                                                      \\
+    dI   & = \frac{2M}{{R_1}^2} r^3 dr                                                    \\
+    I    & = \int_0^{R_1} dI = \frac{2M}{{R_1}^2} \int_0^{R_1} r^3 dr                     \\
+         & = \frac{2M}{R_1^2} \cdot \frac{1}{4} R_1^4                                     \\
+         & = \frac{1}{2} M R_1^2
+  \end{aligned}
+\end{equation}
+次に球体の慣性モーメントを求める．
+z軸上で$-R$から$R$の範囲で球体を円環でスライスしたら円環の半径$R_1$は$\sqrt{R^2 - z^2}$である．
+よって球体の慣性モーメントは式\eqref{eq:momentball}のようになる．
+\begin{equation}
+  \label{eq:momentball}
+  \begin{aligned}
+    \rho & = \frac{3M}{4 \pi R^3}                                                                                    \\
+    dV   & = \pi (R^2 - z^2) dz                                                                                      \\
+    dm   & = \rho \cdot dV = \rho \cdot \pi (R^2-z^2) \cdot dz = \frac{3M}{4 \pi R^3} \cdot \pi (R^2 - z^2) \cdot dz \\
+         & = \frac{3M}{4 R^3} (R^2 - z^2) dz                                                                         \\
+    dI   & = \frac{1}{2} dm r^2                                                                                      \\
+         & = \frac{1}{2} \cdot \frac{3M}{4 R^3} (R^2 - z^2) dz \cdot (R^2 - z^2)                                     \\
+         & = \frac{3M}{8 R^3} (R^2 - z^2)^2 dz                                                                       \\
+    I    & = \int_{-R}^{R} dI = \frac{3M}{8 R^3} \int_{-R}^{R} (R^2 - z^2)^2 dz                                      \\
+         & = \frac{3M}{8 R^3} \int_{-R}^{R} (R^4 - 2R^2z^2 + z^4) dz                                                 \\
+         & = \frac{3M}{8 R^3} \left[ R^4z - \frac{2R^2z^3}{3} + \frac{z^5}{5} \right]_{-R}^{R}                       \\
+         & = \frac{3MR^2}{4} \left(1 - \frac{2}{3} + \frac{1}{5} \right)                                             \\
+         & = \frac{3MR^2}{4} \cdot \frac{8}{15} = \frac{2}{5} MR^2
+  \end{aligned}
+\end{equation}
+課題は$M =M$，$R = a$の球体の慣性モーメントを求めることである．
+式\eqref{eq:momentball}より$R = a$の球体の慣性モーメントは式\eqref{eq:momentball2}のようになる．
+\begin{equation}
+  \label{eq:momentball2}
+  \begin{aligned}
+    I & = \frac{2}{5} M a^2
+  \end{aligned}
+\end{equation}
+\subsubsection{ねじり振り子の周期}
+ねじり振り子の周期が針金の半径$a$と針金の長さ$l$の変化によりどのように変化するかを考える．
+ねじれ振り子の周期$T$は式\eqref{eq:period}より求めることができる．この式より，$a$を二倍にした時の$T$を求める．
+$T_{2a}$は式\eqref{eq:period2}のようになる．この結果より，$a$を2倍に数ると周期は4分の1になることがわかる．
+$T_\frac{1}{2}l$は式\eqref{eq:period3}のようになる．この結果より，$l$を$\frac{1}{2}$倍にすると周期は$\sqrt{\frac{1}{2}}$倍になることがわかる．
+\begin{equation}
+  \label{eq:period}
+  T = 2 \pi \sqrt{\frac{2Il}{\pi a^4 n}}
+\end{equation}
+\begin{equation}
+  \label{eq:period2}
+  T_{2a} = 2 \pi \sqrt{\frac{2Il}{\pi (2a)^4 n}} = 2 \pi \sqrt{\frac{2Il}{\pi a^4 n}} \cdot \frac{1}{\sqrt{16}} = \frac{T}{4}
+\end{equation}
+\begin{equation}
+  \label{eq:period3}
+  T_\frac{1}{2}l = 2 \pi \sqrt{\frac{2Il}{\pi a^4 n}} = 2 \pi \sqrt{\frac{2I(\frac{1}{2}l)}{\pi a^4 n}} = 2 \pi \sqrt{\frac{2Il}{\pi a^4 n}} \cdot \sqrt{\frac{1}{2}} = T \cdot \sqrt{\frac{1}{2}}
+\end{equation}
 
 
 

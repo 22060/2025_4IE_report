@@ -5,10 +5,6 @@
 #include "libmemes.h"
 
 void vect0(void);
-void INT_IRQ0(void);
-void INT_IRQ1(void);
-void INT_CMT0_CMI0(void);
-void INT_CMT1_CMI1(void);
 
 struct vtable_t
 {
@@ -81,8 +77,8 @@ struct vtable_t
     null_int,                   /*	TRAP61 */
     null_int,                   /*	TRAP62 */
     null_int,                   /*	TRAP63 */
-    INT_IRQ0,                   /*	IRQ0 */
-    INT_IRQ1,                   /* 65	IRQ1 */
+    null_int,                   /*	IRQ0 */
+    null_int,                   /* 65	IRQ1 */
     null_int,                   /*	IRQ2 */
     null_int,                   /*	IRQ3 */
     null_int,                   /*	IRQ4 */
@@ -201,11 +197,11 @@ struct vtable_t
     null_int,
     null_int,
     null_int,
-    INT_CMT0_CMI0, /*	CMT0 CMI0 */
-    null_int,      /* 185 */
+    null_int, /*	CMT0 CMI0 */
+    null_int, /* 185 */
     null_int,
     null_int,
-    INT_CMT1_CMI1, /*	CMT1 CMI1 */
+    null_int, /*	CMT1 CMI1 */
     null_int,
     null_int, /* 190 */
     null_int,

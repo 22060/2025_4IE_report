@@ -17,6 +17,9 @@ cat << EOF > ${DIR}/${TGT}.c
 #include "libmemes.h"
 #include <7080S.H>
 
+#define printf ((int (*)(const char *, ...))0x00007c7c)
+#define scanf ((int (*)(const char *, ...))0x00007cb8)
+
 int main(void) {
     // TODO: メイン処理を書く
     while (1) {
