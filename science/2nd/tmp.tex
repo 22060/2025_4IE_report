@@ -1,0 +1,153 @@
+\documentclass[a4paper,11pt]{ltjsarticle}
+% 数式
+\usepackage{amsmath,amsfonts}
+\usepackage{bm}
+% 画像
+\usepackage{graphicx}
+\usepackage{circuitikz}
+\usepackage{amsmath,amssymb}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage{tikz}
+\usepackage{askmaps}
+\usepackage{multirow}
+\usepackage{bigstrut}
+\usepackage{slashbox}
+\usepackage{rotating}
+\usepackage{listings}
+% 数式
+\usepackage{physics}
+\usepackage{mathtools}
+% 画像
+\usepackage{subcaption}
+% 表
+\usepackage{makecell}
+% その他
+\usepackage{url}
+\usepackage{ascmac}
+\usepackage{cases}
+\usepackage{here}
+\usepackage{upgreek}
+% 日本語対応
+\usepackage{luatexja}
+\usepackage{luatexja-fontspec}
+
+\AtBeginDocument{\RenewCommandCopy\qty\SI}
+
+
+\definecolor{commentgreen}{RGB}{0,200,0}
+\definecolor{eminence}{RGB}{120,80,250}
+\definecolor{weborange}{RGB}{255,165,0}
+\definecolor{frenchplum}{RGB}{10,150,200}
+\definecolor{commentgreen}{RGB}{0,200,0}
+\definecolor{eminence}{RGB}{120,80,250}
+\definecolor{weborange}{RGB}{255,165,0}
+\definecolor{frenchplum}{RGB}{10,150,200}
+
+\lstset{
+        language = {C},
+        basicstyle = \ttfamily\small,
+        keywordstyle=\color{eminence}\ttfamily\bfseries,
+        commentstyle=\color{commentgreen}\textit,
+    identifierstyle=\color{black}\ttfamily,
+        xleftmargin=.35in,
+        frame=lines,
+    showstringspaces=false,
+        numbers=left,
+        stepnumber = 1,
+        breaklines=true,
+        numberstyle = \ttfamily\normalsize,
+    tabsize=4,  
+        emph={int, int8_t, int16_t, int32_t, int64_t, uint8_t, uint16_t, uint32_t, uint64_t, char, double, float, unsigned, void, bool},
+        emphstyle={\color{blue}}, 
+        morekeywords={>, <, ., ;, +, -, *, /, !, =, ~},
+        breakindent = 10pt, 
+        framexleftmargin=10mm, 
+        columns=fixed,
+        basewidth=0.5em,
+        }
+
+% 特定のスタイル設定
+\lstdefinestyle{customtxt}{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{lightgray},
+  frame=single,
+  breaklines=true,
+  columns=fullflexible,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=4,
+}
+
+\newcommand{\fig}[4]{
+    \begin{figure}[htbp]
+      \centering
+      \includegraphics{./image/#1}
+      \caption{#2}
+      \label{fig:#3}
+    \end{figure}
+  }
+\begin{document}
+
+
+\section{要旨}
+% 結果等を入れて三行程度でミニレポートを書く
+サーミスタは温度を精度よく測定するために作られた半導体であり，半導体は温度を上げていくと電気抵抗が小さくなる．
+その特性を温度と電気抵抗を測定することにより確認した．
+結果として温度が$4.1$度のときに電気抵抗が$42kΩ$,温度が$77.4$度のときに電気抵抗が$1684Ω$となり，
+特性を持っていることが分かった．
+\section{目的}
+% 何を測定して、どのような意味があるのかを書く
+サーミスターの電気抵抗と温度計の値を調べて因果関係を調べる．
+\section{実験手順}
+% 実験指導書のページを参照で良い。しかし違うものをした場合は再現できるほど細かく書く
+本実験は追加資料pp.1-4を参考にして行う．ただし温度の測定は$4.1$度から$77.4$度の範囲で15回測定を行った．
+測定回数$x$と温度計$y$の値を最小二乗法で求めたところ$y=-5.40x + 82$の関係となり，約$5.4$度ごとの結果を取得している．
+また，ホイーストンブリッジの倍率$r_1/r_3$は10回目まで1倍，11回目から15回目まで10倍とした．
+そして，実験を始める前にホイーンストーンブリッジの操作を学ぶために常温での計測を行った．この結果をNo.0とする．
+\section{実験結果}
+% 表/グラフを用いて実験で得たデータを示し、目的とする物理量を求める。最低限有効数字を意識して、さらには不確かさを表示すること
+サーミスターと温度計の測定データを基に表\ref{tab:result}にまとめた．また，方対数グラフを図2に示す．
+\begin{table}[H]
+  \centering
+  \caption{サーミスターと温度計の測定データ}
+  \label{tab:result}
+  \begin{tabular}{|c|c|c|c|c|c|}
+    \hline
+    No. & t(度) & T(K)   & 1/T                 & 1/T-1/T0             & R(Ω)  \\
+    \hline
+    0   & 25.2 & 298.35 & 3.3518$\cdot 10 ^3$ & -3.0922$\cdot 10 ^4$ & 10340 \\\hline
+    1   & 77.4 & 350.55 & 2.8527$\cdot 10 ^3$ & -8.0833$\cdot 10 ^4$ & 1684  \\\hline
+    2   & 70.5 & 343.65 & 2.9099$\cdot 10 ^3$ & -7.5105$\cdot 10 ^4$ & 2062  \\\hline
+    3   & 64.8 & 337.95 & 2.9590$\cdot 10 ^3$ & -7.0197$\cdot 10 ^4$ & 2470  \\\hline
+    4   & 59.8 & 332.95 & 3.0035$\cdot 10 ^3$ & -6.5754$\cdot 10 ^4$ & 2946  \\\hline
+    5   & 55.4 & 328.55 & 3.0437$\cdot 10 ^3$ & -6.1732$\cdot 10 ^4$ & 3400  \\\hline
+    6   & 50.8 & 323.95 & 3.0869$\cdot 10 ^3$ & -5.7410$\cdot 10 ^4$ & 4000  \\\hline
+    7   & 46.4 & 319.55 & 3.1294$\cdot 10 ^3$ & -5.3159$\cdot 10 ^4$ & 4660  \\\hline
+    8   & 42.3 & 315.45 & 3.1701$\cdot 10 ^3$ & -4.9092$\cdot 10 ^4$ & 5397  \\\hline
+    9   & 35.1 & 308.25 & 3.2441$\cdot 10 ^3$ & -4.1687$\cdot 10 ^4$ & 7005  \\\hline
+    10  & 28   & 301.15 & 3.3206$\cdot 10 ^3$ & -3.4039$\cdot 10 ^4$ & 9178  \\\hline
+    11  & 20.2 & 293.35 & 3.4089$\cdot 10 ^3$ & -2.5209$\cdot 10 ^4$ & 12070 \\\hline
+    12  & 15.4 & 288.55 & 3.4656$\cdot 10 ^3$ & -1.9539$\cdot 10 ^4$ & 15170 \\\hline
+    13  & 10.2 & 283.35 & 3.5292$\cdot 10 ^3$ & -1.3179$\cdot 10 ^4$ & 18730 \\\hline
+    14  & 6.4  & 279.55 & 3.5772$\cdot 10 ^3$ & -8.3815$\cdot 10 ^5$ & 21850 \\\hline
+    15  & 4.1  & 277.25 & 3.6069$\cdot 10 ^3$ & -5.4139$\cdot 10 ^5$ & 24000 \\\hline
+  \end{tabular}
+\end{table}
+\section{考察}
+% 実験結果から何がいえるかという問に答えるところ。実験結果が信頼できるのかを論理的に書く。実験指導書の課題もここで答える。新しい実験方法を披露できるとなおよい。最小二乗法は考察
+実験結果より，サーミスターの電気抵抗は温度が上がるにつれて小さくなることが分かった．
+また，温度と電気抵抗の関係は式\eqref{eq:thermistor}で表されることが知られている．
+ただし$T_0$は273.15Kであり，$R_0$は273.15Kのときの電気抵抗である．
+それぞれの値を最小二乗法により計算したところ，$R_0 = 29944Ω$，$B = 3.53 \cdot 10^3$，となった．
+サーミスターは$R_0$が30kΩになるように作られており，今回の実験結果から得られた値とほぼ一致している．
+\begin{equation}
+  R = R_0 e^{ B \cdot \left( \frac{1}{T} - \frac{1}{T_0} \right)}
+  \label{eq:thermistor}
+\end{equation}
+
+
+
+
+\end{document}
