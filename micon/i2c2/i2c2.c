@@ -521,8 +521,7 @@ unsigned char I2C_EEread_byte(unsigned short adr)
 void main()
 {
     int i, j;
-    unsigned int adr, data;
-    unsigned char tmp;
+    unsigned int adr;
 
     PFC.PBCRL1.BIT.PB3MD = 4; // PB3をSDA端子に設定
     PFC.PBCRL1.BIT.PB2MD = 4; // PB2をSCL端子に設定
@@ -534,47 +533,30 @@ void main()
     // font_dataをEEPROMへ書き込み
     printf("Writing FontData => EEPROM ");
     adr = 0;
-    // for (i = 0; i < 95; i++)
-    // {
-    //     for (j = 0; j < 32; j++)
-    //     {
-    //         I2C_EEwrite_byte(adr++, font_data[i][j] >> 8);
-    //         I2C_EEwrite_byte(adr++, font_data[i][j] & 0xff);
-    //     }
-    //     printf(".");
-    // }
-    // printf(" done\n");
+    for (i = 0; i < 95; i++)
+    {
+        for (j = 0; j < 32; j++)
+        {
+            I2C_EEwrite_byte(adr++, font_data[i][j] >> 8);
+            I2C_EEwrite_byte(adr++, font_data[i][j] & 0xff);
+        }
+        printf(".");
+    }
+    printf(" done\n");
 
     while (1)
     {
-        printf("\ncommand > ");
-        scanf("%s", &tmp);
+        printf("\naddress = ");
         scanf("%x", &adr);
-        switch (tmp)
+
+        for (i = 0; i < 0x100; i++)
         {
-        case 'W': // write
-            scanf("%x", &data);
-            printf("command = %c, adr = %04x\n", tmp, adr);
-            I2C_EEwrite_byte(adr, data);0
-            printf("write %02x to %04x\n", data, adr);
-            break;
-        case 'R': // read
-            tmp = I2C_EEread_byte(adr);
-            printf("read %02x from %04x\n", tmp, adr);
-            break;
-        case 'D': // dump
-            for (i = 0; i < 0x40; i++)
+            if (!(i % 16))
             {
-                if (!(i % 16))
-                {
-                    printf("\n");
-                    printf("%04x : ", adr + i);
-                }
-                printf("%02x ", I2C_EEread_byte(adr + i));
+                printf("\n");
+                printf("%04x : ", adr + i);
             }
-            break;
-        default:
-            printf("unknown command\n");
+            printf("%02x ", I2C_EEread_byte(adr + i));
         }
     }
 }

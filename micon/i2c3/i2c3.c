@@ -1,5 +1,5 @@
 /*
- * i2c11.c
+ * i2c22.c
  */
 
 #include <7080S.H>
@@ -13,26 +13,27 @@
 #define NAK -1
 
 // ------------------------------------------------------------
+unsigned short font_data[95][32];
+
+// ------------------------------------------------------------
 // 開始条件(start condition)を発行する
 void I2C_start(void)
 {
-    // この関数を作成
     IIC2.ICCR2.BYTE = (IIC2.ICCR2.BYTE & 0xbf) | 0x80;
-    while (IIC2.ICSR.BIT.TDRE == 0)
-        ; // TDREが1になるまで待つ
+    while (!IIC2.ICSR.BIT.TDRE)
+        ;
 }
 
 // 停止条件(stop condition)を発行する
 void I2C_stop(void)
 {
-    // この関数を作成
-    IIC2.ICSR.BIT.STOP = 0;  // 停止条件をクリア
-    IIC2.ICCR2.BYTE &= 0x3f; // 停止条件を発行
-    while (IIC2.ICSR.BIT.STOP == 1)
-        ; // 停止条件がクリアされるまで待つ
+    IIC2.ICSR.BIT.STOP = 0;
+    IIC2.ICCR2.BYTE &= 0x3f;
+    while (!IIC2.ICSR.BIT.STOP)
+        ;
 }
 
-int I2C_tx_byte(char data)
+char I2C_tx_byte(char data)
 {
     IIC2.ICDRT = data;
     while (!IIC2.ICSR.BIT.TDRE)
@@ -77,6 +78,7 @@ void I2C_EEwrite_byte(unsigned short adr, unsigned char data)
     IIC2.ICCR1.BIT.MST = 0; // スレーブモード
     IIC2.ICCR1.BIT.TRS = 0; // 受信モード
 
+    //	IIC2.ICSR.BIT.TEND = 0;			////////////
     IIC2.ICSR.BIT.TDRE = 0; ////////////
 }
 
@@ -118,7 +120,8 @@ unsigned char I2C_EEread_byte(unsigned short adr)
     IIC2.ICCR1.BIT.RCVD = 1;  // 最終データ
     tmp = IIC2.ICDRR;         // ダミーリード
 
-    while (!IIC2.ICSR.BIT.RDRF) // 受信完了を待つ
+    while (!IIC2.ICSR.BIT.RDRF)
+        // 受信完了を待つ
         ;
 
     I2C_stop();       // 停止条件を発行
@@ -136,8 +139,9 @@ unsigned char I2C_EEread_byte(unsigned short adr)
 // ------------------------------------------------------------
 void main()
 {
-    unsigned int adr, data, i;
-    char tmp;
+    int i, j, code;
+    unsigned int adr;
+    unsigned short tmp;
 
     PFC.PBCRL1.BIT.PB3MD = 4; // PB3をSDA端子に設定
     PFC.PBCRL1.BIT.PB2MD = 4; // PB2をSCL端子に設定
@@ -146,40 +150,36 @@ void main()
     IIC2.ICCR1.BIT.ICE = 1; // I2Cバス有効
     IIC2.ICCR1.BIT.CKS = 3; // 313kHz
 
-    printf("write = 0xa5\n");
-    I2C_EEwrite_byte(0x00, 0xa5);
-    printf("readback = 0x%02x", I2C_EEread_byte(0x00));
-
+    // EEPROMからfont_dataを読み出す
+    adr = 0;
+    for (i = 0; i < 95; i++)
+    {
+        for (j = 0; j < 32; j++)
+        {
+            tmp = I2C_EEread_byte(adr++);
+            tmp <<= 8;
+            tmp |= I2C_EEread_byte(adr++);
+            font_data[i][j] = tmp;
+        }
+    }
+    // 文字を簡易表示
     while (1)
     {
-        printf("\ncommand > ");
-        scanf("%s", &tmp);
-        scanf("%x", &adr);
-        switch (tmp)
+        printf("ASCII code = 0x");
+        scanf("%x", &code);
+        printf("%c\n", code);
+
+        for (i = 0; i < 32; i++)
         {
-        case 'W': // write
-            scanf("%x", &data);
-            printf("command = %c, adr = %04x\n", tmp, adr);
-            I2C_EEwrite_byte(adr, data);
-            0 printf("write %02x to %04x\n", data, adr);
-            break;
-        case 'R': // read
-            tmp = I2C_EEread_byte(adr);
-            printf("read %02x from %04x\n", tmp, adr);
-            break;
-        case 'D': // dump
-            for (i = 0; i < 0x40; i++)
+            for (j = 0; j < 16; j++)
             {
-                if (!(i % 16))
-                {
-                    printf("\n");
-                    printf("%04x : ", adr + i);
-                }
-                printf("%02x ", I2C_EEread_byte(adr + i));
+                // -- 課題1 --
+                if ((font_data[code][i] >> (15 - j)) % 2)
+                    printf("*");
+                else
+                    printf(" ");
             }
-            break;
-        default:
-            printf("unknown command\n");
+            printf("\n");
         }
     }
 }
