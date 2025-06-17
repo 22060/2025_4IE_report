@@ -6,6 +6,7 @@ void setup()
 {
     Serial.begin(115200);
     Serial.println("CAN ESP32 Example");
+    CAN.setPins(4, 5); // TX=GPIO21, RX=GPIO22
     CAN.begin(1000E3); // Initialize CAN at 1 Mbps
 }
 void loop()

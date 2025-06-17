@@ -227,7 +227,22 @@ void TFT_putstr(unsigned short x, unsigned short y, char *str, unsigned short fg
         k++; // 文字の位置をずらす
     }
 }
-
+void TFT_draw_line(unsigned short x, unsigned short y, unsigned short w, unsigned short h, unsigned short p_color)
+{
+    int i;
+    int j;
+    TFTCTRL = 0x4001;
+    for (i = 0; i < w; i++)
+    {
+        for (j = 0; j < h; j++)
+        {
+            if (x + i < 320 && y + j < 240)
+            {
+                FrameBuf[(y + j) * 320 + (x + i)] = p_color;
+            }
+        }
+    }
+}
 // ------------------------------------------------------------
 // ------------------------------------------------------------
 void main()
@@ -261,24 +276,27 @@ void main()
     TFT_On();
     TFT_clear();
 
-    TFT_putch(0, 0, 'A', _COL_WHITE, _COL_BLACK);
-    // TFT_putch(0, 32, 'a', _COL_WHITE, _COL_BLACK);
-    // TFT_putch(16, 32, 'b', _COL_WHITE, _COL_BLACK);
-    // TFT_putch(32, 32, 'c', _COL_WHITE, _COL_BLACK);
-    // TFT_putch(64, 32, 'd', _COL_WHITE, _COL_BLACK);
-    // TFT_putch(96, 32, 'e', _COL_WHITE, _COL_BLACK);
-    TFT_putstr(0, 128, "abcdefg", _COL_BLACK, _COL_WHITE);
+    TFT_draw_line(40, 0, 240, 1, _COL_BLACK);
+    TFT_draw_line(40, 30, 240, 1, _COL_BLACK);
+    TFT_draw_line(40, 60, 240, 1, _COL_BLACK);
+    TFT_draw_line(40, 90, 240, 1, _COL_BLACK);
+    TFT_draw_line(40, 120, 240, 1, _COL_BLACK);
+    TFT_draw_line(40, 150, 240, 1, _COL_BLACK);
+    TFT_draw_line(40, 180, 240, 1, _COL_BLACK);
+    TFT_draw_line(40, 210, 240, 1, _COL_BLACK);
+    TFT_draw_line(40, 0, 1, 240, _COL_BLACK);
+    TFT_draw_line(70, 0, 1, 240, _COL_BLACK);
+    TFT_draw_line(100, 0, 1, 240, _COL_BLACK);
+    TFT_draw_line(130, 0, 1, 240, _COL_BLACK);
+    TFT_draw_line(160, 0, 1, 240, _COL_BLACK);
+    TFT_draw_line(190, 0, 1, 240, _COL_BLACK);
+    TFT_draw_line(220, 0, 1, 240, _COL_BLACK);
+    TFT_draw_line(250, 0, 1, 240, _COL_BLACK);
+    TFT_draw_line(280, 0, 1, 240, _COL_BLACK);
+
     TFT_draw_screen();
 
     while (1)
     {
-        k++;
-        for (i = 0; i < (320 * 240); i++)
-        {
-            // TFTDATA = _COL_WHITE;
-            FrameBuf[i] = _COL_WHITE;
-        }
-        TFT_putstr(0, k, "hello", _COL_BLACK, _COL_WHITE);
-        TFT_draw_screen();
     };
 }

@@ -161,7 +161,7 @@ void main()
             scanf("%x", &data);
             printf("command = %c, adr = %04x\n", tmp, adr);
             I2C_EEwrite_byte(adr, data);
-            0 printf("write %02x to %04x\n", data, adr);
+            printf("write %02x to %04x\n", data, adr);
             break;
         case 'R': // read
             tmp = I2C_EEread_byte(adr);
