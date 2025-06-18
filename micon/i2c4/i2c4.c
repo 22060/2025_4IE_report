@@ -24,8 +24,44 @@
 #define _COL_BLACK (0x0000)
 
 volatile unsigned short FrameBuf[320 * 240];
+volatile unsigned short board[8 * 8];
+unsigned short cursor[2] = {0, 0};
 
-void TFT_draw_point(unsigned short x_pix, unsigned short y_pix, unsigned short p_color)
+int koma[32 * 2] = {
+    
+        0x0000, 0x0000,
+        0x0000, 0x0000,
+        0x0000, 0x0000,
+        0x0003, 0xC000,
+        0x000F, 0xF000,
+        0x003F, 0xFC00,
+        0x00FF, 0xFF00,
+        0x01FF, 0xFF80,
+        0x01FF, 0xFF80,
+        0x03FF, 0xFFC0,
+        0x03FF, 0xFFC0,
+        0x07FF, 0xFFE0,
+        0x07FF, 0xFFE0,
+        0x0FFF, 0xFFF0,
+        0x0FFF, 0xFFF0,
+        0x0FFF, 0xFFF0,
+        0x0FFF, 0xFFF0,
+        0x07FF, 0xFFE0,
+        0x07FF, 0xFFE0,
+        0x03FF, 0xFFC0,
+        0x03FF, 0xFFC0,
+        0x01FF, 0xFF80,
+        0x01FF, 0xFF80,
+        0x00FF, 0xFF00,
+        0x003F, 0xFC00,
+        0x000F, 0xF000,
+        0x0000, 0x0000,
+        0x0000, 0x0000,
+        0x0000, 0x0000,
+    }
+
+void
+TFT_draw_point(unsigned short x_pix, unsigned short y_pix, unsigned short p_color)
 {
     FrameBuf[y_pix * 320 + x_pix] = p_color;
 }
@@ -239,6 +275,48 @@ void TFT_draw_line(unsigned short x, unsigned short y, unsigned short w, unsigne
             if (x + i < 320 && y + j < 240)
             {
                 FrameBuf[(y + j) * 320 + (x + i)] = p_color;
+            }
+        }
+    }
+}
+void GAME_draw_board(void)
+{
+    int i, j;
+    unsigned short x, y;
+
+    x = 40;
+    y = 0;
+
+    for (i = 0; i < 8; i++)
+    {
+        for (j = 0; j < 8; j++)
+        {
+            switch (board[i + j * 8])
+            {
+            case 0:
+                // 何もしない
+                break;
+            case 1:
+                for (i = 0; i < 30; i++)
+                {
+                    for (j = 0; j < 30; j++)
+                    {
+                        if (board[i + j * 8] & (1 << (15 - j)))
+                        {
+                            // fg_colorを設定
+                            TFT_draw_point(x + j, y + i, fg_color);
+                        }
+                        else
+                        {
+                            // bg_colorを設定
+                            TFT_draw_point(x + j, y + i, bg_color);
+                        }
+                    }
+                }
+                break;
+
+            default:
+                break;
             }
         }
     }
