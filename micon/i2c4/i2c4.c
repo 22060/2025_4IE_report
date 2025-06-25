@@ -28,40 +28,68 @@ volatile unsigned short board[8 * 8];
 unsigned short cursor[2] = {0, 0};
 
 int koma[32 * 2] = {
-    
-        0x0000, 0x0000,
-        0x0000, 0x0000,
-        0x0000, 0x0000,
-        0x0003, 0xC000,
-        0x000F, 0xF000,
-        0x003F, 0xFC00,
-        0x00FF, 0xFF00,
-        0x01FF, 0xFF80,
-        0x01FF, 0xFF80,
-        0x03FF, 0xFFC0,
-        0x03FF, 0xFFC0,
-        0x07FF, 0xFFE0,
-        0x07FF, 0xFFE0,
-        0x0FFF, 0xFFF0,
-        0x0FFF, 0xFFF0,
-        0x0FFF, 0xFFF0,
-        0x0FFF, 0xFFF0,
-        0x07FF, 0xFFE0,
-        0x07FF, 0xFFE0,
-        0x03FF, 0xFFC0,
-        0x03FF, 0xFFC0,
-        0x01FF, 0xFF80,
-        0x01FF, 0xFF80,
-        0x00FF, 0xFF00,
-        0x003F, 0xFC00,
-        0x000F, 0xF000,
-        0x0000, 0x0000,
-        0x0000, 0x0000,
-        0x0000, 0x0000,
-    }
 
-void
-TFT_draw_point(unsigned short x_pix, unsigned short y_pix, unsigned short p_color)
+    0x0000,
+    0x0000,
+    0x0000,
+    0x0000,
+    0x0000,
+    0x0000,
+    0x0003,
+    0xC000,
+    0x000F,
+    0xF000,
+    0x003F,
+    0xFC00,
+    0x00FF,
+    0xFF00,
+    0x01FF,
+    0xFF80,
+    0x01FF,
+    0xFF80,
+    0x03FF,
+    0xFFC0,
+    0x03FF,
+    0xFFC0,
+    0x07FF,
+    0xFFE0,
+    0x07FF,
+    0xFFE0,
+    0x0FFF,
+    0xFFF0,
+    0x0FFF,
+    0xFFF0,
+    0x0FFF,
+    0xFFF0,
+    0x0FFF,
+    0xFFF0,
+    0x07FF,
+    0xFFE0,
+    0x07FF,
+    0xFFE0,
+    0x03FF,
+    0xFFC0,
+    0x03FF,
+    0xFFC0,
+    0x01FF,
+    0xFF80,
+    0x01FF,
+    0xFF80,
+    0x00FF,
+    0xFF00,
+    0x003F,
+    0xFC00,
+    0x000F,
+    0xF000,
+    0x0000,
+    0x0000,
+    0x0000,
+    0x0000,
+    0x0000,
+    0x0000,
+};
+
+void TFT_draw_point(unsigned short x_pix, unsigned short y_pix, unsigned short p_color)
 {
     FrameBuf[y_pix * 320 + x_pix] = p_color;
 }
@@ -85,7 +113,6 @@ void TFT_clear(void)
     TFTCTRL = 0x4001;
     for (i = 0; i < (320 * 240); i++)
     {
-        TFTDATA = _COL_WHITE;
         FrameBuf[i] = _COL_WHITE;
     }
 }
@@ -248,7 +275,27 @@ void TFT_putch(unsigned short x, unsigned short y, char ch, unsigned short fg_co
         }
     }
 }
+void TFT_putch_min(unsigned short x, unsigned short y, char ch, unsigned short fg_color, unsigned short bg_color)
+{
+    int i, j;
 
+    for (i = 0; i < 29; i++)
+    {
+        for (j = 0; j < 16; j++)
+        {
+            if (font_data[ch - 32][i] & (1 << (15 - j)))
+            {
+                // fg_colorを設定
+                TFT_draw_point(x + j, y + i, fg_color);
+            }
+            else
+            {
+                // bg_colorを設定
+                TFT_draw_point(x + j, y + i, bg_color);
+            }
+        }
+    }
+}
 void TFT_putstr(unsigned short x, unsigned short y, char *str, unsigned short fg_color, unsigned short bg_color)
 {
     char ch;
@@ -279,48 +326,50 @@ void TFT_draw_line(unsigned short x, unsigned short y, unsigned short w, unsigne
         }
     }
 }
-void GAME_draw_board(void)
+void move(unsigned short *cur)
 {
-    int i, j;
-    unsigned short x, y;
-
-    x = 40;
-    y = 0;
-
-    for (i = 0; i < 8; i++)
+    // printf("AD0.ADDR0 = %04x, AD0.ADDR1 = %04x\n", AD0.ADDR0, AD0.ADDR1);
+    if (AD0.ADDR0 < 0x4000)
     {
-        for (j = 0; j < 8; j++)
+        if (cur[1] == 0)
         {
-            switch (board[i + j * 8])
-            {
-            case 0:
-                // 何もしない
-                break;
-            case 1:
-                for (i = 0; i < 30; i++)
-                {
-                    for (j = 0; j < 30; j++)
-                    {
-                        if (board[i + j * 8] & (1 << (15 - j)))
-                        {
-                            // fg_colorを設定
-                            TFT_draw_point(x + j, y + i, fg_color);
-                        }
-                        else
-                        {
-                            // bg_colorを設定
-                            TFT_draw_point(x + j, y + i, bg_color);
-                        }
-                    }
-                }
-                break;
-
-            default:
-                break;
-            }
+            cur[1] = 0; // 範囲外は０にする
+        }
+        else
+        {
+            cur[1] -= 1; // -- ジョイスティック左 --
+        }
+    }
+    else if (AD0.ADDR0 > 0xc000)
+    {
+        cur[1] += 1; // -- ジョイスティック右 --
+        if (cur[1] > 7)
+        {
+            cur[1] = 7; // 範囲外は７にする
+        }
+    }
+    // printf("AD0.ADDR0 = %04x, AD0.ADDR1 = %04x\n", AD0.ADDR0, AD0.ADDR1);
+    if (AD0.ADDR1 > 0xc000)
+    {
+        if (cur[0] == 0)
+        {
+            cur[0] = 0; // 範囲外は０にする
+        }
+        else
+        {
+            cur[0] -= 1; // -- ジョイスティック上 --
+        }
+    }
+    else if (AD0.ADDR1 < 0x4000)
+    {
+        cur[0] += 1; // -- ジョイスティック下 --
+        if (cur[0] > 7)
+        {
+            cur[0] = 7; // 範囲外は７にする
         }
     }
 }
+
 // ------------------------------------------------------------
 // ------------------------------------------------------------
 void main()
@@ -328,7 +377,27 @@ void main()
     int i, j, code, k;
     unsigned int adr;
     unsigned short tmp;
+    int count = 0;
+    int bool = 0;
     k = 0;
+
+    STB.CR4.BIT._AD0 = 0;
+    STB.CR4.BIT._CMT = 0;
+    STB.CR4.BIT._MTU2 = 0;
+
+    CMT0.CMCSR.BIT.CKS = 1;
+
+    // MTU2 ch0
+    MTU20.TCR.BIT.TPSC = 3;  // 1/64選択
+    MTU20.TCR.BIT.CCLR = 1;  // TGRAのコンペアマッチでクリア
+    MTU20.TGRA = 31250 - 1;  // 100ms
+    MTU20.TIER.BIT.TTGE = 1; // A/D変換開始要求を許可
+
+    // AD0
+    AD0.ADCSR.BIT.ADM = 3;   // シングルモード
+    AD0.ADCSR.BIT.CH = 1;    // AN0
+    AD0.ADCSR.BIT.TRGE = 1;  // MTU2からのトリガ有効
+    AD0.ADTSR.BIT.TRG0S = 1; // TGRAコンペアマッチでトリガ
 
     PFC.PBCRL1.BIT.PB3MD = 4; // PB3をSDA端子に設定
     PFC.PBCRL1.BIT.PB2MD = 4; // PB2をSCL端子に設定
@@ -336,6 +405,7 @@ void main()
     STB.CR3.BIT._IIC2 = 0;  // スタンバイ解除
     IIC2.ICCR1.BIT.ICE = 1; // I2Cバス有効
     IIC2.ICCR1.BIT.CKS = 3; // 313kHz
+    MTU2.TSTR.BIT.CST0 = 1; // MTU2 CH0スタート
 
     // EEPROMからfont_dataを読み出す
     adr = 0;
@@ -376,5 +446,43 @@ void main()
 
     while (1)
     {
+        count++;
+        if (count > 0)
+        {
+            // printf("cursor = %d, %d\n", cursor[0], cursor[1]);
+            bool = !bool;
+            count = 0;
+            TFT_clear();
+
+            if (bool)
+            {
+                move(cursor);
+                TFT_putch_min(cursor[0] * 32 + 41, cursor[1] * 30 + 1, 0, _COL_RED, _COL_WHITE);
+                TFT_putch_min(cursor[0] * 32 + 56, cursor[1] * 30 + 1, 0, _COL_RED, _COL_WHITE);
+            }
+            else
+            {
+                TFT_putch_min(cursor[0] * 32 + 41, cursor[1] * 30 + 1, 0, _COL_WHITE, _COL_RED);
+                TFT_putch_min(cursor[0] * 32 + 56, cursor[1] * 30 + 1, 0, _COL_WHITE, _COL_RED);
+            }
+            TFT_draw_line(40, 0, 256, 1, _COL_BLACK);
+            TFT_draw_line(40, 30, 256, 1, _COL_BLACK);
+            TFT_draw_line(40, 60, 256, 1, _COL_BLACK);
+            TFT_draw_line(40, 90, 256, 1, _COL_BLACK);
+            TFT_draw_line(40, 120, 256, 1, _COL_BLACK);
+            TFT_draw_line(40, 150, 256, 1, _COL_BLACK);
+            TFT_draw_line(40, 180, 256, 1, _COL_BLACK);
+            TFT_draw_line(40, 210, 256, 1, _COL_BLACK);
+            TFT_draw_line(40, 0, 1, 240, _COL_BLACK);
+            TFT_draw_line(72, 0, 1, 240, _COL_BLACK);
+            TFT_draw_line(104, 0, 1, 240, _COL_BLACK);
+            TFT_draw_line(136, 0, 1, 240, _COL_BLACK);
+            TFT_draw_line(168, 0, 1, 240, _COL_BLACK);
+            TFT_draw_line(200, 0, 1, 240, _COL_BLACK);
+            TFT_draw_line(232, 0, 1, 240, _COL_BLACK);
+            TFT_draw_line(264, 0, 1, 240, _COL_BLACK);
+            TFT_draw_line(296, 0, 1, 240, _COL_BLACK);
+            TFT_draw_screen();
+        }
     };
 }

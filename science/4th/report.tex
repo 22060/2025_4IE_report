@@ -1,0 +1,166 @@
+\documentclass[a4paper,11pt]{ltjsarticle}
+% 数式
+\usepackage{amsmath,amsfonts}
+\usepackage{bm}
+% 画像
+\usepackage{graphicx}
+\usepackage{circuitikz}
+\usepackage{amsmath,amssymb}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage{tikz}
+\usepackage{askmaps}
+\usepackage{multirow}
+\usepackage{bigstrut}
+\usepackage{slashbox}
+\usepackage{rotating}
+\usepackage{listings}
+% 数式
+\usepackage{physics}
+\usepackage{mathtools}
+% 画像
+\usepackage{subcaption}
+% 表
+\usepackage{makecell}
+% その他
+\usepackage{url}
+\usepackage{ascmac}
+\usepackage{cases}
+\usepackage{here}
+\usepackage{upgreek}
+% 日本語対応
+\usepackage{luatexja}
+\usepackage{luatexja-fontspec}
+
+\AtBeginDocument{\RenewCommandCopy\qty\SI}
+
+
+\definecolor{commentgreen}{RGB}{0,200,0}
+\definecolor{eminence}{RGB}{120,80,250}
+\definecolor{weborange}{RGB}{255,165,0}
+\definecolor{frenchplum}{RGB}{10,150,200}
+\definecolor{commentgreen}{RGB}{0,200,0}
+\definecolor{eminence}{RGB}{120,80,250}
+\definecolor{weborange}{RGB}{255,165,0}
+\definecolor{frenchplum}{RGB}{10,150,200}
+
+\lstset{
+        language = {C},
+        basicstyle = \ttfamily\small,
+        keywordstyle=\color{eminence}\ttfamily\bfseries,
+        commentstyle=\color{commentgreen}\textit,
+    identifierstyle=\color{black}\ttfamily,
+        xleftmargin=.35in,
+        frame=lines,
+    showstringspaces=false,
+        numbers=left,
+        stepnumber = 1,
+        breaklines=true,
+        numberstyle = \ttfamily\normalsize,
+    tabsize=4,  
+        emph={int, int8_t, int16_t, int32_t, int64_t, uint8_t, uint16_t, uint32_t, uint64_t, char, double, float, unsigned, void, bool},
+        emphstyle={\color{blue}}, 
+        morekeywords={>, <, ., ;, +, -, *, /, !, =, ~},
+        breakindent = 10pt, 
+        framexleftmargin=10mm, 
+        columns=fixed,
+        basewidth=0.5em,
+        }
+
+% 特定のスタイル設定
+\lstdefinestyle{customtxt}{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{lightgray},
+  frame=single,
+  breaklines=true,
+  columns=fullflexible,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=4,
+}
+
+\newcommand{\fig}[4]{
+    \begin{figure}[htbp]
+      \centering
+      \includegraphics{./image/#1}
+      \caption{#2}
+      \label{fig:#3}
+    \end{figure}
+  }
+\begin{document}
+
+
+\section{要旨}
+% 結果等を入れて三行程度でミニレポートを書く
+ガラスは光を屈折させる．この屈折率は光の波長に依存する．分光器を用いて最小偏角法により波長ごとの屈折率を調べる．
+結果として，赤色の屈折率は1.644，青色の屈折率は1.667であることにより，波長が長いほど屈折率が小さくなることがわかった．
+\section{目的}
+% 何を測定して、どのような意味があるのかを書く
+光の屈折角を調べて，屈折率を求める．
+\section{実験手順}
+% 実験指導書のページを参照で良い。しかし違うものをした場合は再現できるほど細かく書く
+本実験は実験指導書pp.86-93を参考にして行う．
+\section{実験結果}
+% 表/グラフを用いて実験で得たデータを示し、目的とする物理量を求める。最低限有効数字を意識して、さらには不確かさを表示すること
+\subsection{頂角の測定}
+頂角の測定結果を表\ref{tab:angle}に示す．$T_1$と$T_2$は副尺の読み取り値であり，$\beta$はその差である．
+\begin{table}[H]
+  \centering
+  \caption{頂角の測定結果}
+  \label{tab:angle}
+  \begin{tabular}{|c|c|c|c|c|c|}
+    \hline
+    副尺   & $T_1$     & $T_2$     & \beta=$T_1-T_2$ & $\beta$の平均値                 & 頂角\alpha=$\beta$/2         \\
+    \hline
+    $V$  & 275:54:00 & 156:10:00 & 119度44分00秒      & \multirow{2}{*}{119度41分30秒} & \multirow{2}{*}{59度50分45秒} \\
+    \cline{1-4}
+    $V'$ & 95:52:00  & 336:13:00 & 119度39分00秒      &                             &                            \\
+    \hline
+  \end{tabular}
+\end{table}
+\subsection{屈折率の測定}
+屈折率の測定結果を表\ref{tab:refractive_index}と\ref{tab:refractive_index2}に示す．
+\begin{table}[H]
+  \centering
+  \caption{屈折率(赤色)の測定結果}
+  \label{tab:refractive_index}
+  \begin{tabular}{|c|c|c|c|c|c|c|c|}
+    \hline
+    副尺   & $T_1$     & $T_2$     & \gamma=$T_1-T_2$ & \gamma の平均値                & $\delta_{\text{min}}$ = \gamma/2 & n=$\frac{\sin((\delta_{\text{min}} + \alpha)/2)}{\sin(\alpha / 2)}$ \\
+    \hline
+    $V$  & 269:30:00 & 168:53:00 & 100:37:00        & \multirow{2}{*}{100:36:30} & \multirow{2}{*}{50:18:15}        & \multirow{2}{*}{1.644}                                              \\
+    \cline{1-4}
+    $V'$ & 89:30:00  & 348:54:00 & 100:36:00        &                            &                                  &                                                                     \\
+    \hline
+  \end{tabular}
+\end{table}
+\begin{table}[H]
+  \centering
+  \caption{屈折率(青色)の測定結果}
+  \label{tab:refractive_index2}
+  \begin{tabular}{|c|c|c|c|c|c|c|c|}
+    \hline
+    副尺   & $T_1$     & $T_2$     & \gamma=$T_1-T_2$ & \gamma の平均値                & $\delta_{\text{min}}$ = \gamma/2 & n=$\frac{\sin((\delta_{\text{min}} + \alpha)/2)}{\sin(\alpha / 2)}$ \\
+    \hline
+    $V$  & 271:53:00 & 166:29:00 & 105:24:00        & \multirow{2}{*}{105:21:30} & \multirow{2}{*}{52:40:45}        & \multirow{2}{*}{1.667}                                              \\
+    \cline{1-4}
+    $V'$ & 91:50:00  & 346:31:00 & 105:19:00        &                            &                                  &                                                                     \\
+    \hline
+  \end{tabular}
+\end{table}
+\section{考察}
+\subsection{実験結果より}
+波長ごとの屈折率を求めた結果，赤色の屈折率は1.644，青色の屈折率は1.667であった．
+波長は青色のほうが赤色よりも短い．そして実験結果より屈折率は青色のほうが大きいことがわかったので，波長と屈折率の関係には
+波長が長いほど屈折率が小さくなるという関係があることがわかった．
+\subsection{課題①}
+波長が短いほうが屈折率が大きくなる．よって，ふれ角が大きいのは$D_2$である．
+\subsection{課題②}
+頂角測定では，$V$と$V'$の差を使用した．これにより，傾きがあったとしても差が一定なため誤差は生じない．
+
+
+
+
+
+\end{document}

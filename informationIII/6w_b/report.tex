@@ -1,0 +1,841 @@
+\documentclass[a4paper,11pt]{ltjsarticle}
+% 数式
+\usepackage{amsmath,amsfonts}
+\usepackage{bm}
+% 画像
+\usepackage{graphicx}
+\usepackage{circuitikz}
+\usepackage{amsmath,amssymb}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage{tikz}
+\usepackage{askmaps}
+\usepackage{multirow}
+\usepackage{bigstrut}
+\usepackage{slashbox}
+\usepackage{rotating}
+\usepackage{listings}
+% 数式
+\usepackage{physics}
+\usepackage{mathtools}
+% 画像
+\usepackage{subcaption}
+% 表
+\usepackage{makecell}
+% その他
+\usepackage{url}
+\usepackage{ascmac}
+\usepackage{cases}
+\usepackage{here}
+\usepackage{upgreek}
+% 日本語対応
+\usepackage{luatexja}
+\usepackage{luatexja-fontspec}
+
+\AtBeginDocument{\RenewCommandCopy\qty\SI}
+
+
+\definecolor{commentgreen}{RGB}{0,200,0}
+\definecolor{eminence}{RGB}{120,80,250}
+\definecolor{weborange}{RGB}{255,165,0}
+\definecolor{frenchplum}{RGB}{10,150,200}
+\definecolor{commentgreen}{RGB}{0,200,0}
+\definecolor{eminence}{RGB}{120,80,250}
+\definecolor{weborange}{RGB}{255,165,0}
+\definecolor{frenchplum}{RGB}{10,150,200}
+
+\lstset{
+        language = {C},
+        basicstyle = \ttfamily\small,
+        keywordstyle=\color{eminence}\ttfamily\bfseries,
+        commentstyle=\color{commentgreen}\textit,
+    identifierstyle=\color{black}\ttfamily,
+        xleftmargin=.35in,
+        frame=lines,
+    showstringspaces=false,
+        numbers=left,
+        stepnumber = 1,
+        breaklines=true,
+        numberstyle = \ttfamily\normalsize,
+    tabsize=4,  
+        emph={int, int8_t, int16_t, int32_t, int64_t, uint8_t, uint16_t, uint32_t, uint64_t, char, double, float, unsigned, void, bool},
+        emphstyle={\color{blue}}, 
+        morekeywords={>, <, ., ;, +, -, *, /, !, =, ~},
+        breakindent = 10pt, 
+        framexleftmargin=10mm, 
+        columns=fixed,
+        basewidth=0.5em,
+        }
+
+% 特定のスタイル設定
+\lstdefinestyle{customtxt}{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{lightgray},
+  frame=single,
+  breaklines=true,
+  columns=fullflexible,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=4,
+}
+
+\newcommand{\fig}[4]{
+    \begin{figure}[htbp]
+      \centering
+      \includegraphics{./image/#1}
+      \caption{#2}
+      \label{fig:#3}
+    \end{figure}
+  }
+\begin{document}
+
+\begin{titlepage}
+    \begin{center}
+        \vspace*{2cm}
+        {\LARGE \textbf{自然言語処理 実験レポート}}\\[2cm]
+        {\large 実験日：2025年6月20日}\\[0.5cm]
+        {\large 提出日：\today}\\[1.5cm]
+        {\large 組番号：212}\\[0.5cm]
+        {\large 学籍番号：22060}\\[0.5cm]
+        {\large 氏名：古城隆人}\\[2cm]
+        \vfill
+    \end{center}
+\end{titlepage}
+
+\section{目的}
+近年ではネットワークの進化，技術の進化により大量のデータを取得することが容易になっている．
+大量のデータをどのように文政するかで課題となるものの一つが自然言語である．
+自然言語を分析することにより，人間では気づきずらい特徴の抽出を行うことが出来る．
+しかしながら自然言語は普段日常で人が話すものであり，自分たちが最も理解できる言語である．
+そのため，自然言語を情報データとして分析するときに，計算機などは自然言語を理解することができない(二進数を基とする計算しかできないため)．
+そこで今回は自然言語を数値化することを目指して実験を行っていき，それぞれの手法の利点や改善点を考察していく．
+今回は100件のテキストデータに対してデータ分析を行う．混乱を避けるため，ファイル1件をテキスト，
+テキストの中の本文を文章と呼ぶことにする．
+\section{実験内容}
+本実験で実際に行った内容を具体的に述べる。\\
+使用した手法3つと内容，また前提となる技術を以下に示す．
+\subsection{形態素解析}
+形態素解析では，自然言語に対して単語や文節などの単位で分割し，
+それぞれの単語の品詞や意味を解析する手法である。
+これにより，自然言語を構成する要素を抽出し、テキストデータの前処理を行うことができる。
+目的で書いた計算機で自然言語を理解するという目的は形態素解析により，達成することが出来ると言える．
+なのでこれ以下の技術は計算機で扱えるようになったデータを分析する技術となる．
+形態素解析にはMeCabというツールを使用する．このツールは辞書型のツールであり
+日本語の形態素解析に特化している．
+\subsection{Term Frequency}
+Term Frequency (以下本文ではTFと略す)は、文書内の単語の出現頻度を計算する手法である。
+単純に出現する頻度が高い文章量を求めることにより，その文章が何を表しているかを見ることが出来る．
+しかし比較対象とするテキストがある場合には単語の出現回数で比較すると必然的に文章No文字の量が多いほうが有利となってしまう．
+そのため正規化という手法を用いて，出現する度合いで比較することにする．計算式で表すと数式\eqref{eq:tf}のようになる．
+ここで、$t$は単語、$d$は文書を表す。
+countは単語$t$が文書$d$に出現する回数を表し、count(d)は文書$d$内の全単語の出現回数を表す。
+TFは単語の出現頻度を文書内の全単語の出現頻度で割ることで、度合いを求めている．
+\begin{equation}
+    \label{eq:tf}
+    \text{TF}(t, d) = \frac{\text{count}(t, d)}{\text{count}(d)}
+\end{equation}
+\subsection{Inverse Document Frequency}
+Inverse Document Frequency (以下本文ではIDFと略す)は、
+テキスト全体での単語の希少性を求めるものである．
+様々な分野で使われる単語は必然的に様々な文章での出現頻度が高まる．そのため，
+複数のテキストの中で出現する頻度が低い単語ほど特定の分野でしか使われていない単語となる．
+これを求めることにより，特定の分野で使われている単語を参照するだけで関連する文章の数を減らすことが出来る．
+IDFは通常，式\eqref{eq:idf}のように定義される。
+ここで、$t$は単語、$D$はテキストの集合を表す。
+$|D|$はテキストの総数、$|\{d \in D : t \in d\}|$は単語$t$を含むテキストの数を表す。
+IDFは、単語$t$が文書集合$D$においてどれだけ希少であるかを示す。
+$\log$を使用する理由として，出現回数と頻度を逆比例の形にするよりも
+出現頻度が高い単語のウェイトを出来るだけ小さくして低い単語のウェイトをできるだけ大きくすることが出来るからである．
+例として，今回のテキスト量は100件であるため，$y = \log_{10}(\frac{100}{x})$の式となるので$x$の値から$y$を
+求めてみると1\thicksim 10の間では1\leqq y \leqq 2になり，10\thicksim 100の間では0<y<1となる．よって出現回数が10以下の単語に対してそれ以降の出現頻度のウェイトが低いことがわかる．
+\begin{equation}
+    \label{eq:idf}
+    \text{IDF}(t, D) = \log\left(\frac{|D|}{|\{d \in D : t \in d\}|}\right)
+\end{equation}
+\subsection{tf-idf}
+TF-IDFは、tfとidfの値から文章中での単語の重み付けをしているものである．
+tfとidfの値を乗算することにより，全体のテキストの中で希少性の高い単語かつ，文章中で出現頻度が高い単語
+を求めることが出来る．これによりtfでも求めた値から一般に使われる単語をフィルタリングしたものがtf-idfDearutomo言える．
+tf-idfは、式\eqref{eq:tfidf}のように定義される。
+ここで、$t$は単語、$d$は文書、$D$はテキストの集合を表す。
+TF-IDFは、単語$t$の文書$d$における重要度を示す。
+\begin{equation}
+    \label{eq:tfidf}
+    \text{TF-IDF}(t, d, D) = \text{TF}(t, d) \times \text{IDF}(t, D)
+\end{equation}
+\section{実験環境}
+\begin{itemize}
+    \item ハードウェア：Windows 11, Intel Core i7-11800H, 16GB RAM
+    \item ソフトウェア：java 21.0.1 2023-10-17 LTS, MeCab 0.996, Visual Studio Code
+    \item 使用データ：用意されたデータファイル群(テキスト100件)
+\end{itemize}
+
+\section{設計}
+\subsection{プログラム設計方針}
+プログラムはJavaで実装を行った．Javaを使用した理由として，tfやidfをそれぞれオブジェクトとして扱うことが出来，プログラムの行数が少なくなり可読性があがるためである．
+また，各オブジェクトの設計を適切に行うことにより，プログラムの実装が容易になる．そのため自然言語処理を行うための手段として最適な言語である．
+プログラムの設計を以下に示す．
+\subsubsection{Wordオブジェクト}
+Wordオブジェクトは単語を格納するオブジェクトである．形態素解析によって得たデータをWordオブジェクトに格納し，
+一単語ずつの特徴を扱うことが出来る．
+Wordオブジェクトの定義であるWord.classをListing\ref{tab:word_class}に示す．
+equalsメソッドを用意することにより，Wordオブジェクト同士の比較を行うことが出来る．
+また，toStringメソッドを用意することによりクラスの中身を容易に見ることが出来，デバッグの速度をあげることが出来る．
+\begin{lstlisting}[language=Java, caption=Wordオブジェクトの定義,label=tab:word_class]
+package nlp;
+class Word {
+	private String hyousoukei = null;// 表層形
+	private String hinshi = null;// 品詞
+	private String hinshi1 = null;// 品詞細分類 1
+	private String hinshi2 = null;// 品詞細分類 2
+	private String hinshi3 = null;// 品詞細分類 3
+	private String katsuyoKata = null;// 活用型
+	private String katsuyoKei = null;// 活用形
+	private String genkei = null;// 原形
+	private String yomi = null;// 読み
+	private String hatsuon = null;// 発音
+
+    public boolean equals(Object obj) {
+		// オブジェクトが null の場合，不一致
+		if (obj == null) {
+			return false;
+		}
+		// オブジェクトの型が異なる場合，不一致
+		if (!(obj instanceof Word)) {
+			return false;
+		}
+		// オブジェクトの全てのフィールドが一致している場合，一致
+		if (((((Word) obj).getHyousoukei() == null && this.getHyousoukei() == null)
+				|| ((Word) obj).getHyousoukei().equals(this.getHyousoukei()))
+				&& ((((Word) obj).getHinshi() == null && this.getHinshi() == null)
+						|| ((Word) obj).getHinshi().equals(this.getHinshi()))
+				&& ((((Word) obj).getHinshi1() == null && this.getHinshi1() == null)
+						|| ((Word) obj).getHinshi1().equals(this.getHinshi1()))
+				&& ((((Word) obj).getHinshi2() == null && this.getHinshi2() == null)
+						|| ((Word) obj).getHinshi2().equals(this.getHinshi2()))
+				&& ((((Word) obj).getHinshi3() == null && this.getHinshi3() == null)
+						|| ((Word) obj).getHinshi3().equals(this.getHinshi3()))
+				&& ((((Word) obj).getKatsuyoKata() == null && this.getKatsuyoKata() == null)
+						|| ((Word) obj).getKatsuyoKata().equals(this.getKatsuyoKata()))
+				&& ((((Word) obj).getKatsuyoKei() == null && this.getKatsuyoKei() == null)
+						|| ((Word) obj).getKatsuyoKei().equals(this.getKatsuyoKei()))
+				&& ((((Word) obj).getGenkei() == null && this.getGenkei() == null)
+						|| ((Word) obj).getGenkei().equals(this.getGenkei()))
+				&& ((((Word) obj).getYomi() == null && this.getYomi() == null)
+						|| ((Word) obj).getYomi().equals(this.getYomi()))
+				&& ((((Word) obj).getHatsuon() == null && this.getHatsuon() == null)
+						|| ((Word) obj).getHatsuon().equals(this.getHatsuon()))) {
+			return true;
+		}
+		// そのほかは不一致
+		return false;
+	}
+
+    public String toString() {
+		return "Word [hyousoukei=" + hyousoukei + ", hinshi=" + hinshi + ", hinshi1=" + hinshi1 + ", hinshi2=" + hinshi2
+				+ ", hinshi3=" + hinshi3 + ", katsuyoKata=" + katsuyoKata + ", katsuyoKei=" + katsuyoKei + ", genkei="
+				+ genkei + ", yomi=" + yomi + ", hatsuon=" + hatsuon + "]";
+	}
+
+    // 各種ゲッターとセッター
+}
+\end{lstlisting}
+\subsubsection{WordCountオブジェクト}
+WordCountオブジェクトは，Wordオブジェクトを格納し，その出現回数をカウントするオブジェクトである．
+単語一つにつきひとつのインスタンスを生成し，その単語の出現回数をカウントしている．
+WordCountオブジェクトの定義であるWordCount.classをListing\ref{tab:wordcount_class}に示す．
+\begin{lstlisting}[language=Java, caption=WordCountオブジェクトの定義,label=tab:wordcount_class]
+package nlp;
+
+class WordCount {
+    private Word word;// 形態素解析した語の結果を格納する
+    private Integer count;// 出現回数を計数するためのカウンタ
+
+    WordCount(Word word, Integer count) {
+        this.word = word;
+        this.count = count;
+    }
+
+    // 各種ゲッターとセッター
+}
+\end{lstlisting}
+\subsubsection{TFオブジェクト}
+TFオブジェクトでは，TF値の格納と，TF値の導出を行う．TF値の計算を行うために文章内で出現した単語を記憶しておく配列を用意する．
+JavaではArrayListを使用することにより，配列の長さが可変長の配列を扱うことが出来る．
+また，データの型は任意のオブジェクトにすることが出来る．そのため今回はWordCountオブジェクトを格納するArrayListを用意する．
+しかし，単語の数だけインスタンスの生成を行うためメモリの使用量が増加するというデメリットがあるが，
+使用する計算機のメモリが大きいのと解析するファイルの量が少ないため，デメリットはほぼないに等しくなる．
+WordCountオブジェクトには単語と出現回数の記録能力しかないため，
+実際にはArrayListのDfCountオブジェクトにした．TfCountオブジェクトはWordCountオブジェクトを継承しており，
+TF値を格納するための変数を追加している．
+TFオブジェクトの定義であるTermFrequency.classをListing\ref{tab:tf_class}に示す．
+計算結果を格納しておく配列以外にも，TF値を求めるための関数tfが定義されている．
+tf関数では，MeCabを使用して形態素解析を行い，その結果をlistに格納している．
+また，listに格納した結果を出力するためのファイル名を引数として受け取り，そのファイルに出力する機能も持っている．
+\begin{lstlisting}[language=Java, caption=TFオブジェクトの定義,label=tab:tf_class]
+package nlp;
+
+import java.io.BufferedReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+
+public class TermFrequency {
+    ArrayList<TfCount> list = new ArrayList<TfCount>();
+
+    public void tf(String inputFilename, String outputFilename) {
+        // 解析対象のファイル名
+        // String inputFilename = "data\\001.txt";
+        // mecab コマンドで対象ファイルを解析するコマンド文
+        String[] command = { "cmd.exe", "/C", "mecab", inputFilename };
+        int sum = 0;
+        try {
+            // 解析するコマンドを実行する
+            Process ps = Runtime.getRuntime().exec(command);
+            // 解析した結果を表示するためのオブジェクトに変換する
+            BufferedReader bReader_i = new BufferedReader(new InputStreamReader(ps.getInputStream(), "SJIS"));
+            // 標準出力を 1 行ずつ受け取る一時オブジェクト
+            String targetLine;
+            while (true) {
+                // 形態素解析結果を 1 行ずつ受け取る
+                targetLine = bReader_i.readLine();
+                if (targetLine == null) {
+                    // 最終行になったら終わる
+                    break;
+                } else if (targetLine.equals("EOS")) {
+                    continue;
+                } else {
+                    // 行ごとに結果を表示する
+                    String targetArray[] = targetLine.split("[,\t]");
+                    Word wo = new Word();
+                    if (targetArray.length > 0) {
+                        wo.setHyousoukei(targetArray[0]);
+                    }
+                    if (targetArray.length > 1) {
+                        wo.setHinshi(targetArray[1]);
+                    }
+                    if (targetArray.length > 2) {
+                        wo.setHinshi1(targetArray[2]);
+                    }
+                    if (targetArray.length > 3) {
+                        wo.setHinshi2(targetArray[3]);
+                    }
+                    if (targetArray.length > 4) {
+                        wo.setHinshi3(targetArray[4]);
+                    }
+                    if (targetArray.length > 5) {
+                        wo.setKatsuyoKata(targetArray[5]);
+                    }
+                    if (targetArray.length > 6) {
+                        wo.setKatsuyoKei(targetArray[6]);
+                    }
+                    if (targetArray.length > 7) {
+                        wo.setGenkei(targetArray[7]);
+                    }
+                    if (targetArray.length > 8) {
+                        wo.setYomi(targetArray[8]);
+                    }
+
+                    if ("名詞".equals(wo.getHinshi().toString())
+                            && ("一般".equals(wo.getHinshi1().toString()) || "サ変接続".equals(wo.getHinshi1().toString())
+                                    || "固有名詞".equals(wo.getHinshi1().toString()))
+                            && (wo.getHyousoukei().length() > 2)) {
+                        // System.out.println(wo.toString());
+
+                        int i;
+                        for (i = 0; i < list.size(); i++) {
+                            if (list.get(i).getWord().equals(wo)) {
+                                list.get(i).setCount(list.get(i).getCount() + 1);
+                                break;
+                            }
+                        }
+                        // リストにエントリが無かったときは，新しい語としてリストに追加する
+                        if (i == list.size()) {
+                            list.add(new TfCount(wo, Integer.valueOf(1)));
+                        }
+
+                    }
+
+                    // 形態素解析結果を表示する
+                    // System.out.println(wo.toString());
+
+                }
+
+            }
+            for (int i = 0; i < list.size(); i++) {
+                // System.out.println(list.get(i).getWord().getHyousoukei()
+                // + ":" + list.get(i).getCount());
+                sum += list.get(i).getCount();
+            }
+            // System.out.println("合計語数:" + sum);
+
+            list.sort(new WordCompare());
+
+            // String outputFilename = "data\\001tf.txt";
+            try (FileWriter fw = new FileWriter(outputFilename)) {
+                // System.out.println(outputFilename);
+                fw.write("単語\t出現回数\tTF\n");
+                for (int i = 0; i < list.size(); i++) {
+                    // System.out.println(list.get(i).getWord().getHyousoukei() + ":"
+                    // + list.get(i).getCount());
+                    list.get(i).setTf((double) list.get(i).getCount() / (double) sum);
+                    fw.write(list.get(i).getWord().getHyousoukei() + "\t"
+                            + list.get(i).getCount() + "\t"
+                            + String.format("%.10f", list.get(i).getTf()) + "\n");
+                }
+                fw.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+\end{lstlisting}
+\subsubsection{IDFオブジェクト}
+IDFオブジェクトでは，IDF値の格納と，IDF値の導出を行う．
+TFオブジェクト同様にArrayListを使用して，IDF値を求めるための配列を用意する．
+IDFの計算に使用する数式は実験内容で示したものと違い，数式\eqref{eq:idf}を使用して求める．
+IDFオブジェクトの定義であるDocumentFrequency.classをListing\ref{tab:idf_class}に示す．
+IDFオブジェクトでは，tf-idfの計算を行うためにTFオブジェクトを引数として受け取り，
+そのTFオブジェクトの中に格納されているWordCountオブジェクトを用いてIDF値を求める関数idfを定義している．
+しかし，TFオブジェクトと同様にDfCountオブジェクトを新たに作成してDfCountオブジェクトの配列を用いている．
+\begin{align}
+    \label{tab:idf_class}
+    \text{IDF}(t, D) = \log\left(\frac{|D|}{|\{d \in D : t \in d\}|}\right)
+\end{align}
+\begin{lstlisting}[language=Java, caption=IDFオブジェクトの定義,label=tab:idf_class]
+    package nlp;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+
+public class DocumentFrequency {
+    // DF をカウントするためのデータ格納領域の定義
+    ArrayList<DfCount> dfList = new ArrayList<DfCount>();
+
+    // DF の元になる TF を受ける
+    TermFrequency tf[];
+
+    DocumentFrequency(TermFrequency[] tf) {
+        this.tf = tf;
+    }
+
+    public void df(String outputFilename) {
+        // TF100 ファイル分について繰り返す
+        for (int i = 0; i < tf.length; i++) {
+
+            // TF1 件に含まれる語の分だけ繰り返し
+            for (TfCount tfCount : tf[i].list) {
+                // DF のリストの中にエントリがあるか調べる
+                for (int j = 0; j < dfList.size(); j++) {
+                    // エントリがあった場合はカウントを増やす
+                    if (dfList.get(j).getWord().equals(tfCount.getWord())) {
+                        dfList.get(j).setCount(dfList.get(j).getCount() + 1);
+                        break;
+                    }
+                }
+                // リストにエントリが無かったときは，新しい語としてリストに追加する
+                DfCount df = new DfCount(tfCount.getWord(), 1);
+                dfList.add(df);
+
+            }
+
+        }
+        // ソートする
+        dfList.sort(new DfCompare());
+        // df,idf の結果をファイルに保存する
+
+        try (FileWriter fw = new FileWriter(outputFilename)) {
+            fw.write("単語\tDF\tIDF\n");
+            for (int j = 0; j < dfList.size(); j++) {
+                dfList.get(j)
+                        .setIdf(Math.log10((double) tf.length / (double) dfList.get(j).getCount()) + 1.0);
+                if (dfList.get(j).getIdf() < 1.005) {
+                    System.out.println(dfList.get(j).getWord().getHyousoukei() + "\t" + dfList.get(j).getCount()
+                            + "\t" + String.format("%.10f", dfList.get(j).getIdf()));
+                } else {
+                    fw.write(dfList.get(j).getWord().getHyousoukei() + "\t" + dfList.get(j).getCount() + "\t"
+                            + String.format("%.10f", dfList.get(j).getIdf()) + "\n");
+
+                }
+            }
+            fw.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+    }
+
+}
+
+\end{lstlisting}
+\subsubsection{TF-IDFオブジェクト}
+TF-IDFオブジェクトでは，tf-idf値の格納と，tf-idf値の導出を行う．
+TFオブジェクト同様にArrayListを使用して，tf-idf値を求めるための配列を用意する．
+TF-IDFオブジェクトの定義であるtfidf.classをListing\ref{tab:tfidf_class}に示す．
+TF-IDFオブジェクトでは，IDFオブジェクトを引数として受け取り，そのIDFオブジェクトの中に格納されているDfCountオブジェクト,TfCountオブジェクトを用いてtf-idf値を求める関数tfidfを定義している．
+\begin{lstlisting}[language=Java, caption=TF-IDFオブジェクトの定義,label=tab:tfidf_class]
+    package nlp;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+
+public class TfIdf {
+    // TF-IDF を計算するためのデータ格納領域の定義
+    ArrayList<TfIdfCount> tfIdfList = new ArrayList<TfIdfCount>();
+
+    // TF-IDF の元になる DF を受ける
+    DocumentFrequency df;
+
+    TfIdf(DocumentFrequency df) {
+        this.df = df;
+    }
+
+    public void tfidf(String outputFilename) {
+        int j = 0;
+        for (TermFrequency tf : df.tf) {
+            for (TfCount tfCount : tf.list) {
+                for (DfCount dfCount : df.dfList) {
+                    // TF の単語が DF の単語と一致するか確認
+                    if (tfCount.getWord().equals(dfCount.getWord())) {
+                        if (tfCount.getTf() * dfCount.getIdf() > 0.011) { // TF-IDF の値が 0.1 より大きい場合のみ追加
+                            TfIdfCount newTfIdfCount = new TfIdfCount(tfCount.getWord(), tfCount.getCount(),
+                                    tfCount.getTf(),
+                                    dfCount.getIdf(), tfCount.getTf() * dfCount.getIdf());
+                            tfIdfList.add(newTfIdfCount);
+                        }
+                        break;
+                    }
+                }
+            }
+
+            // ソートする
+            tfIdfList.sort(new TfIdfCompare());
+
+            outputFilename = "data\\" + String.format("%03d", j + 1) + "tfidf.txt"; // 出力ファイル名を設定
+            // tf-idf の結果をファイルに保存する
+            try (FileWriter fw = new FileWriter(outputFilename)) {
+                fw.write("単語\t出現回数\tTF\tIDF\ttfidf\n");
+                for (TfIdfCount tfIdfCount : tfIdfList) {
+                    // 単語 出現回数 TF IDF tfidf
+                    fw.write(tfIdfCount.getWord().getHyousoukei() + "\t"
+                            + tfIdfCount.getCount() + "\t"
+                            + String.format("%.10f", tfIdfCount.getTf()) + "\t"
+                            + String.format("%.10f", tfIdfCount.getIdf()) + "\t"
+                            + String.format("%.10f", tfIdfCount.getTfIdf()) + "\n");
+                }
+                fw.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            tfIdfList.clear(); // 次のTF-IDF計算のためにリストをクリア
+            j++; // 次のファイルのインデックスに進む
+        }
+    }
+
+}
+
+\end{lstlisting}
+\subsubsection{main関数}
+main関数では，実際にプログラムを実行するための関数である．
+main関数では，実験内容で示した手法を順番に実行していく．
+NaturalLanguageProcessing.classをListing\ref{tab:main_class}に示す．
+\begin{lstlisting}[language=Java, caption=main関数の定義,label=tab:main_class]
+    package nlp;
+
+public class NaturalLanguageProcessing {
+    static public void main(String args[]) {
+        System.out.println("TF 導出");
+        TermFrequency[] tf = new TermFrequency[100];
+        for (int i = 1; i <= 100; i++) {
+            tf[i - 1] = new TermFrequency();
+            String inputFileName = "data\\" + String.format("%03d", i) + ".txt";
+            String outputFileName = "data\\" + String.format("%03d", i) + "tf.txt";
+            tf[i - 1].tf(inputFileName, outputFileName);
+        }
+        System.out.println("TF 導出完了");
+        System.out.println("DF 導出");
+        DocumentFrequency df = new DocumentFrequency(tf);
+        df.df("data\\df.txt");
+        System.out.println("DF 導出完了");
+
+        System.out.println("TF-IDF 導出");
+        TfIdf tfidf = new TfIdf(df);
+        tfidf.tfidf("data\\tfidf.txt");
+        System.out.println("TF-IDF 導出完了");
+        System.out.println("自然言語処理完了");
+    }
+}
+
+\end{lstlisting}
+\section{結果}
+今回の実験では，言葉の種類によりフィルターをかけ，また出現頻度でのフィルターも実装し，最終的な結果での小さすぎる値のフィルターを実装した．
+これら3つのフィルターをまとめて改善案とする．各手法の改善案の結果と改善前の結果を示す．
+\subsection{TF値}
+改善前のTF値の計算は表\ref{tab:TF-result}に示す結果となった．
+改善後のTF値の計算結果を表\ref{tab:TF-result2}に示す．
+\begin{table}[htbp]
+    \centering
+    \caption{TF値の計算結果}
+    \label{tab:TF-result}
+    \begin{tabular}{|c|c|c|}
+        \hline
+        単語    & 出現回数 & TF値          \\
+        \hline
+        \%    & 41   & 0.0764925373 \\
+        \hline
+        天然記念物 & 16   & 0.0298507463 \\
+        \hline
+        E     & 16   & 0.0298507463 \\
+        \hline
+        の     & 13   & 0.0242537313 \\
+        \hline
+        地     & 13   & 0.0242537313 \\
+        \hline
+        〔     & 11   & 0.0205223881 \\
+        \hline
+        県     & 11   & 0.0205223881 \\
+        \hline
+    \end{tabular}
+\end{table}
+\begin{table}[htbp]
+    \centering
+    \caption{改善後のTF値の計算結果}
+    \label{tab:TF-result2}
+    \begin{tabular}{|c|c|c|}
+        \hline
+        単語        & 出現回数    & TF値          \\
+        \hline
+        天然記念物     & 1     6 & 0.2025316456 \\
+        \hline
+        両生類       & 7       & 0.0886075949 \\
+        \hline
+        爬虫類       & 7       & 0.0886075949 \\
+        \hline
+        オオサンショウウオ & 5       & 0.0632911392 \\
+        \hline
+        文化財       & 3       & 0.0379746835 \\
+        \hline
+    \end{tabular}
+\end{table}
+\newpage
+\subsection{IDF値}
+改善前のIDF値の計算は表\ref{tab:IDF-result}に示す結果となった．
+改善後のIDF値の計算結果を表\ref{tab:IDF-result2}に示す．
+\begin{table}[htbp]
+    \centering
+    \caption{IDF値の計算結果}
+    \label{tab:IDF-result}
+    \begin{tabular}{|c|c|c|}
+        \hline
+        単語   & DF値 & IDF値         \\
+        \hline
+        出展   & 100 & 1.0000000000 \\
+        \hline
+        移動   & 100 & 1.0000000000 \\
+        \hline
+        http & 100 & 1.0000000000 \\
+        \hline
+        中略   &     &              \\
+        \hline
+        」    & 1   & 3.0000000000 \\
+        \hline
+        作成   & 1   & 3.0000000000 \\
+        \hline
+        カテゴリ & 1   & 3.0000000000 \\
+        \hline
+    \end{tabular}
+\end{table}
+\begin{table}[htbp]
+    \centering
+    \caption{改善後のIDF値の計算結果}
+    \label{tab:IDF-result2}
+    \begin{tabular}{|c|c|c|}
+        \hline
+        単語     & DF値 & IDF値         \\
+        \hline
+        リンク    & 52  & 1.2839966564 \\
+        \hline
+        アメリカ   & 19  & 1.7212463990 \\
+        \hline
+        所在地    & 15  & 1.8239087409 \\
+        \hline
+        中略     &     &              \\
+        \hline
+
+        交響楽    & 1   & 3.0000000000 \\
+        \hline
+        ハリウッド  & 1   & 3.0000000000 \\
+        \hline
+        マザーグース & 1   & 3.0000000000 \\
+        \hline
+    \end{tabular}
+\end{table}
+\newpage
+\subsection{TF-IDF値}
+改善前のTF-IDF値の計算は表\ref{tab:TFIDF-result}に示す結果となった．
+改善後のTF-IDF値の計算結果を表\ref{tab:TFIDF-result2}に示す．
+\begin{table}[htbp]
+    \centering
+    \caption{TF-IDF値の計算結果}
+    \label{tab:TFIDF-result}
+    \begin{tabular}{|c|c|c|c|c|}
+        \hline
+        単語    & 出現回数 & TF           & IDF          & tfidf        \\
+        \hline
+        天然記念物 & 16   & 0.0298507463 & 2.6989700043 & 0.0805662688 \\
+        \hline
+        \%    & 41   & 0.0764925373 & 1.0132282657 & 0.0775044009 \\
+        \hline
+        〔     & 11   & 0.0205223881 & 3.0000000000 & 0.0615671642 \\
+        \hline
+        〕     & 11   & 0.0205223881 & 3.0000000000 & 0.0615671642 \\
+        \hline
+    \end{tabular}
+\end{table}
+\begin{table}[htbp]
+    \centering
+    \caption{改善後のTF-IDF値の計算結果}
+    \label{tab:TFIDF-result2}
+    \begin{tabular}{|c|c|c|c|c|}
+        \hline
+        単語        & 出現回数 & TF           & IDF          & tfidf        \\
+        \hline
+        天然記念物     & 16   & 0.2025316456 & 2.6989700043 & 0.5466268363 \\
+        \hline
+        両生類       & 7    & 0.0886075949 & 3.0000000000 & 0.2658227848 \\
+        \hline
+        爬虫類       & 7    & 0.0886075949 & 2.6989700043 & 0.2391492409 \\
+        \hline
+        オオサンショウウオ & 5    & 0.0632911392 & 3.0000000000 & 0.1898734177 \\
+        \hline
+    \end{tabular}
+\end{table}
+\subsection{分析結果}
+$ファイル番号 = \{ (学籍番号) $\cdot$ (組番号) + 24 \} \% 100 + 1$としたファイルの分析結果を表\ref{tab:analysis_result}に示す．
+自分は学籍番号22060，組番号212のため，ファイル番号は45となる．
+\begin{table}[htbp]
+    \centering
+    \caption{分析結果}
+    \label{tab:analysis_result}
+    \begin{tabular}{|c|c|c|c|c|}
+        \hline
+        単語        & 出現回数 & TF           & IDF          & tfidf        \\
+        \hline
+        グリーン      & 13   & 0.3095238095 & 2.5228787453 & 0.7808910402 \\
+        新幹線       & 2    & 0.0476190476 & 3.0000000000 & 0.1428571429 \\
+        シート       & 2    & 0.0476190476 & 2.6989700043 & 0.1285223812 \\
+        レベル       & 2    & 0.0476190476 & 2.5228787453 & 0.1201370831 \\
+        東海道新幹線    & 1    & 0.0238095238 & 3.0000000000 & 0.0714285714 \\
+        こだま       & 1    & 0.0238095238 & 3.0000000000 & 0.0714285714 \\
+        申し出       & 1    & 0.0238095238 & 3.0000000000 & 0.0714285714 \\
+        払い戻し      & 1    & 0.0238095238 & 3.0000000000 & 0.0714285714 \\
+        南海電気鉄道    & 1    & 0.0238095238 & 3.0000000000 & 0.0714285714 \\
+        サザン       & 1    & 0.0238095238 & 3.0000000000 & 0.0714285714 \\
+        リクライニング   & 1    & 0.0238095238 & 3.0000000000 & 0.0714285714 \\
+        ロングシート    & 1    & 0.0238095238 & 3.0000000000 & 0.0714285714 \\
+        クロス       & 1    & 0.0238095238 & 2.6989700043 & 0.0642611906 \\
+        東日本旅客鉄道   & 1    & 0.0238095238 & 2.6989700043 & 0.0642611906 \\
+        名古屋       & 1    & 0.0238095238 & 2.3979400087 & 0.0570938097 \\
+        サービス      & 1    & 0.0238095238 & 2.3010299957 & 0.0547864285 \\
+        東日本       & 1    & 0.0238095238 & 2.3010299957 & 0.0547864285 \\
+        http      & 1    & 0.0238095238 & 1.0043648054 & 0.0239134477 \\
+        ://       & 1    & 0.0238095238 & 1.0043648054 & 0.0239134477 \\
+        wikipedia & 1    & 0.0238095238 & 1.0043648054 & 0.0239134477 \\
+        org       & 1    & 0.0238095238 & 1.0043648054 & 0.0239134477 \\
+        wiki      & 1    & 0.0238095238 & 1.0043648054 & 0.0239134477 \\
+        カテゴリ      & 1    & 0.0238095238 & 1.0043648054 & 0.0239134477 \\
+        フリー       & 1    & 0.0238095238 & 1.0000000000 & 0.0238095238 \\
+        ウィキペディア   & 1    & 0.0238095238 & 1.0000000000 & 0.0238095238 \\
+        Wikipedia & 1    & 0.0238095238 & 1.0000000000 & 0.0238095238 \\
+        ナビゲーション   & 1    & 0.0238095238 & 1.0000000000 & 0.0238095238 \\
+
+        \hline
+    \end{tabular}
+\end{table}
+\newpage
+\section{考察}
+実験結果から読み取ったこととなぜこのような改善をしたか，また期待した値が取得できたかについて示す．
+\subsection{TF値}
+TF値の計算では精度の向上と処理速度アップのために登録する単語を少なうするフィルターを追加した．
+これにより文章の特徴を一番表している名詞の中でも重要な名詞だけを抽出することが出来ると考えた．
+実際の実験結果では県や地など，特定につながらない単語が上位を占めていたが，改善後には固有名詞が大半になり，
+TF値の上位を見るだけで文章の特徴を把握できるようになったのでこのフィルターの追加は成功といえる．
+また，処理速度は20381msから4893msとなった．
+この秒数は全体の処理時間であるが，TFのフィルターのみを有効化しただけでの改善速度である．
+そのためこの改善案は成功といえる．
+\subsection{IDF値}
+IDF値でもTF値と同様にフィルターを追加した．このフィルターでは一般的すぎる単語の排除を目的としている．
+この単語は文章の特徴を表すものではないため，IDF値の計算においては必要ないと考えた．
+例えば改善前には出展や移動など特徴が少ない単語がメモリ上に格納されていた．
+しかしフィルターを追加した後にはこのような単語が消えて固有名詞に近いものが下位を示している．
+そのためメモリの使用料や処理速度を改善することが出来ている．このフィルターのみを有効化した場合の
+処理速度は8859msから8982msであり，あまり変化はなかった．そのためこのフィルターは意味がないといえる．
+\subsection{TF-IDF値}
+TF-IDF値の計算では，TF-IDFの値が一定以下のものは実行結果に影響を与えないようにした．処理速度を速くしようとしたときにファイルの書き込みは大変時間がかかるものである．
+そのため，TF-IDF値が0.01以下のものは出力しないようにした．
+改善前と改善後ではTF-IDF値の計算の速度が 494msから450msとなった，+10\%の改善となった．そのためこの改善案は成功といえる．
+\subsection{分析結果}
+分析結果より，上位の単語を見るとグリーン，新幹線とあることから新幹線の座席の種類について言っていることがわかる．
+しかし，この文章のファイルは自由席を表しているものである．なぜ自由席という単語がないかを考えると，Mecabでの形態素解析で自由と席の二つの単語
+分かれてしまっているからだと考察できる．実際にMecabで追実験を行った．実行結果をListing\ref{tab:analysis_result2}に示す．
+このような単語を自然言語処理で拾うためには形態素解析のツールの改善が必要である．
+辞書型の形態素解析ではこのような限界があるため他の解析ツールを用いてから自然言語処理を行うことによって精度の向上が期待できる．
+\begin{lstlisting}[language=Java, caption=Mecabでの形態素解析結果,label=tab:analysis_result2]
+C:\Users\kojor_fyn5sjo>mecab
+自由席
+自由    名詞,形容動詞語幹,*,*,*,*,自由,ジユウ,ジユー
+席      名詞,一般,*,*,*,*,席,セキ,セキ
+EOS
+\end{lstlisting}
+
+\section{付録}
+付録として今回の実験で使用したソースコードを示す。
+
+\subsection*{DfCompare.java}
+\lstinputlisting[language=Java,caption={DfCompare.java}]{c:/pleiades/2025-03/workspace/naturallanguageprocessing/src/nlp/DfCompare.java}
+
+\subsection*{DfCount.java}
+\lstinputlisting[language=Java,caption={DfCount.java}]{c:/pleiades/2025-03/workspace/naturallanguageprocessing/src/nlp/DfCount.java}
+
+\subsection*{DocumentFrequency.java}
+\lstinputlisting[language=Java,caption={DocumentFrequency.java}]{c:/pleiades/2025-03/workspace/naturallanguageprocessing/src/nlp/DocumentFrequency.java}
+
+\subsection*{NaturalLanguageProcessing.java}
+\lstinputlisting[language=Java,caption={NaturalLanguageProcessing.java}]{c:/pleiades/2025-03/workspace/naturallanguageprocessing/src/nlp/NaturalLanguageProcessing.java}
+
+\subsection*{TermFrequency.java}
+\lstinputlisting[language=Java,caption={TermFrequency.java}]{c:/pleiades/2025-03/workspace/naturallanguageprocessing/src/nlp/TermFrequency.java}
+
+\subsection*{TfCount.java}
+\lstinputlisting[language=Java,caption={TfCount.java}]{c:/pleiades/2025-03/workspace/naturallanguageprocessing/src/nlp/TfCount.java}
+
+\subsection*{TfIdf.java}
+\lstinputlisting[language=Java,caption={TfIdf.java}]{c:/pleiades/2025-03/workspace/naturallanguageprocessing/src/nlp/TfIdf.java}
+
+\subsection*{TfIdfCompare.java}
+\lstinputlisting[language=Java,caption={TfIdfCompare.java}]{c:/pleiades/2025-03/workspace/naturallanguageprocessing/src/nlp/TfIdfCompare.java}
+
+\subsection*{TfIdfCount.java}
+\lstinputlisting[language=Java,caption={TfIdfCount.java}]{c:/pleiades/2025-03/workspace/naturallanguageprocessing/src/nlp/TfIdfCount.java}
+
+\subsection*{Word.java}
+\lstinputlisting[language=Java,caption={Word.java}]{c:/pleiades/2025-03/workspace/naturallanguageprocessing/src/nlp/Word.java}
+
+\subsection*{WordCompare.java}
+\lstinputlisting[language=Java,caption={WordCompare.java}]{c:/pleiades/2025-03/workspace/naturallanguageprocessing/src/nlp/WordCompare.java}
+
+\subsection*{WordCount.java}
+\lstinputlisting[language=Java,caption={WordCount.java}]{c:/pleiades/2025-03/workspace/naturallanguageprocessing/src/nlp/WordCount.java}
+
+
+
+
+
+\end{document}

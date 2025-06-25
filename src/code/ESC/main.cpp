@@ -16,48 +16,69 @@
 
 #include <SimpleFOC.h>
 
-// ===========================
-// ユーザー定義パラメータ
-// ===========================
-// モーターのパラメータ
-#define MOTOR_POLE_PAIRS 7        // 極対数
-#define VOLTAGE_POWER_SUPPLY 16.0 // 電源電圧 [V]
-#define VOLTAGE_LIMIT 6.0         // 最大印加電圧 [V]
+BLDCMotor motor = BLDCMotor(7);
+BLDCDriver6PWM driver = BLDCDriver6PWM(A_PHASE_UH, A_PHASE_UL, A_PHASE_VH, A_PHASE_VL, A_PHASE_WH, A_PHASE_WL);
+LowsideCurrentSense currentSense = LowsideCurrentSense(0.003f, -64.0f / 7.0f, A_OP1_OUT, A_OP2_OUT, A_OP3_OUT);
 
-// 制御ループ設定
-#define TARGET_VELOCITY 20.0 // 回転速度 [rad/s]
+Encoder encoder = Encoder(A_HALL1, A_HALL2, 2048, A_HALL3);
 
-// ===========================
-// モーター・ドライバ初期化
-// ===========================
-BLDCMotor motor = BLDCMotor(MOTOR_POLE_PAIRS);
-BLDCDriver6PWM driver = BLDCDriver6PWM(
-    A_PHASE_UH, A_PHASE_UL,
-    A_PHASE_VH, A_PHASE_VL,
-    A_PHASE_WH, A_PHASE_WL);
+void doA() { encoder.handleA(); }
+void doB() { encoder.handleB(); }
+void doIndex() { encoder.handleIndex(); }
 
-// センサレス用ベロシティオープンループ制御
+Commander command = Commander(Serial);
+void doTarget(char *cmd) { command.motion(&motor, cmd); }
+
 void setup()
 {
-    Serial.begin(115200);
+    encoder.init();
+    encoder.enableInterrupts(doA, doB, doIndex);
 
-    // ドライバ設定
-    driver.voltage_power_supply = VOLTAGE_POWER_SUPPLY;
-    driver.voltage_limit = VOLTAGE_LIMIT;
+    motor.linkSensor(&encoder);
+
+    driver.voltage_power_supply = 16;
     driver.init();
     motor.linkDriver(&driver);
 
-    // モーター設定
-    motor.controller = MotionControlType::velocity_openloop;
+    currentSense.linkDriver(&driver);
+    currentSense.init();
+    currentSense.skip_align = true;
+    motor.linkCurrentSense(&currentSense);
+
+    motor.voltage_sensor_align = 1;
+    motor.velocity_index_search = 3;
+    motor.voltage_limit = 6;
+    motor.velocity_limit = 1000;
+
+    motor.controller = MotionControlType::velocity;
+    motor.torque_controller = TorqueControlType::foc_current;
+
+    motor.PID_current_q.P = motor.PID_current_d.P = 0.1;
+    motor.PID_current_q.I = motor.PID_current_d.I = 10;
+
+    motor.PID_velocity.P = 0.5;
+    motor.PID_velocity.I = 1;
+    motor.PID_velocity.output_ramp = 1000;
+    motor.LPF_velocity.Tf = 0.01;
+
+    motor.P_angle.P = 20;
+
+    Serial.begin(115200);
+    motor.useMonitoring(Serial);
 
     motor.init();
+    motor.initFOC();
+    command.add('T', doTarget, "target angle");
 
-    Serial.println("SimpleFOC センサレス BLDC 初期化完了");
+    Serial.println(F("Motor ready."));
+    Serial.println(F("Set the target angle using serial terminal:"));
+    _delay(1000);
 }
 
-// 制御ループ
 void loop()
 {
-    motor.move(1.0);
+    motor.move();
+    motor.loopFOC();
+    command.run();
 }
 #endif
