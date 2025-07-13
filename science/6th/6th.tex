@@ -1,0 +1,151 @@
+\documentclass[a4paper,11pt]{ltjsarticle}
+% 数式
+\usepackage{amsmath,amsfonts}
+\usepackage{bm}
+% 画像
+\usepackage{graphicx}
+\usepackage{circuitikz}
+\usepackage{amsmath,amssymb}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage{tikz}
+\usepackage{askmaps}
+\usepackage{multirow}
+\usepackage{bigstrut}
+\usepackage{slashbox}
+\usepackage{rotating}
+\usepackage{listings}
+% 数式
+\usepackage{physics}
+\usepackage{mathtools}
+% 画像
+\usepackage{subcaption}
+% 表
+\usepackage{makecell}
+% その他
+\usepackage{url}
+\usepackage{ascmac}
+\usepackage{cases}
+\usepackage{here}
+\usepackage{upgreek}
+% 日本語対応
+\usepackage{luatexja}
+\usepackage{luatexja-fontspec}
+
+\AtBeginDocument{\RenewCommandCopy\qty\SI}
+
+
+\definecolor{commentgreen}{RGB}{0,200,0}
+\definecolor{eminence}{RGB}{120,80,250}
+\definecolor{weborange}{RGB}{255,165,0}
+\definecolor{frenchplum}{RGB}{10,150,200}
+\definecolor{commentgreen}{RGB}{0,200,0}
+\definecolor{eminence}{RGB}{120,80,250}
+\definecolor{weborange}{RGB}{255,165,0}
+\definecolor{frenchplum}{RGB}{10,150,200}
+
+\lstset{
+        language = {C},
+        basicstyle = \ttfamily\small,
+        keywordstyle=\color{eminence}\ttfamily\bfseries,
+        commentstyle=\color{commentgreen}\textit,
+    identifierstyle=\color{black}\ttfamily,
+        xleftmargin=.35in,
+        frame=lines,
+    showstringspaces=false,
+        numbers=left,
+        stepnumber = 1,
+        breaklines=true,
+        numberstyle = \ttfamily\normalsize,
+    tabsize=4,  
+        emph={int, int8_t, int16_t, int32_t, int64_t, uint8_t, uint16_t, uint32_t, uint64_t, char, double, float, unsigned, void, bool},
+        emphstyle={\color{blue}}, 
+        morekeywords={>, <, ., ;, +, -, *, /, !, =, ~},
+        breakindent = 10pt, 
+        framexleftmargin=10mm, 
+        columns=fixed,
+        basewidth=0.5em,
+        }
+
+% 特定のスタイル設定
+\lstdefinestyle{customtxt}{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{lightgray},
+  frame=single,
+  breaklines=true,
+  columns=fullflexible,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=4,
+}
+
+\newcommand{\fig}[4]{
+    \begin{figure}[htbp]
+      \centering
+      \includegraphics{./image/#1}
+      \caption{#2}
+      \label{fig:#3}
+    \end{figure}
+  }
+\begin{document}
+
+
+\section{要旨}
+% 結果等を入れて三行程度でミニレポートを書く
+光を金属に照射すると，金属表面から電子が飛び出ることが一般的に知られており，光電効果と呼ばれる．
+これは光の粒子性を示す現象であり，光が持つエネルギーにより，エネルギー保存の法則に従って電子が飛び出す．
+本実験ではあてる光の周波数の違いにより飛び出す電子の量[C]の違を調べる．
+また，実験した結果よりプランク定数$h$を求める．
+\section{目的}
+% 何を測定して、どのような意味があるのかを書く
+光の波長ごとの光電効果による電子の飛び出し量により，プランク定数$h$を求める．
+\section{実験手順}
+% 実験指導書のページを参照で良い。しかし違うものをした場合は再現できるほど細かく書く
+本実験は実験指導書pp.170-179を参考にして行う．
+
+\section{実験結果}
+% 表/グラフを用いて実験で得たデータを示し、目的とする物理量を求める。最低限有効数字を意識して、さらには不確かさを表示すること
+計測した結果をグラフ1に示す．x軸が電圧[V]，y軸が電流計の値である．電流=0のときが光電効果が起こる最小の電圧であるため，
+この値よりプランク定数を求めることが出来る．青色，赤色，緑色の最小の電圧を用いて波長と電圧の関係を表\ref{tab:result}に示す．
+それぞれの色の周波数は順に，635±10nm, 532±10nm, 450±10nmである．周波数と最小の電圧をグラフ2に示す．
+このグラフはy軸に最小の電圧[V]，x軸に周波数[Hz]をとる．このグラフからプランク定数を求めた結果を表\ref{tab:result2}に示す．
+\begin{table}[htbp]
+  \centering
+  \caption{最小の電圧と波長の関係}
+  \label{tab:result}
+  \begin{tabular}{|c|c|c|c|}
+    \hline
+    色        & 赤     & 緑     & 青    \\
+    \hline
+    最小の電圧[V] & 0.525 & 0.705 & 1.05 \\
+    \hline
+  \end{tabular}
+\end{table}
+\begin{table}[htbp]
+  \centering
+  \caption{プランク定数の求め方}
+  \label{tab:result2}
+  \begin{tabular}{|c|c|}
+    \hline
+    色   & プランク定数[h] [eV$\cdot$s] \\
+    \hline
+    赤-緑 & 3.13±0.08×10$^{-34}$   \\
+    緑-青 & 5.37±0.08×10$^{-34}$   \\
+    赤-青 & 4.31±0.08×10$^{-34}$   \\
+    \hline
+  \end{tabular}
+\end{table}
+\section{考察}
+% 実験結果から何がいえるかという問に答えるところ。実験結果が信頼できるのかを論理的に書く。実験指導書の課題もここで答える。新しい実験方法を披露できるとなおよい。最小二乗法は考察
+\subsection{グラフ1}
+グラフ1の結果を見ると，V=RIの関係とほぼ等しいグラフとなっており，実験のデータはほぼ正確に取れていると思う．しか
+しかし，赤色は0付近の傾きが水平に近いが，緑と青が傾きが垂直に近くなっており，電流=0付近でのデータの計測がうまくいっていない可能性があると思われる．
+\subsection{プランク定数より}
+プランク定数を求めたが，緑-青が理論値に一番近かった．これはどちらも0付近での傾きが近いため，同じぶんずれているため偶然値が近くなったものだと思われる．
+比較的精度がいいと思われる赤色と精度が悪いと思われる色では倍近く値が変わっていた．
+緑と青の精度が悪くなった原因として，電圧値の高さが挙げられる．実験指導書では1.0Vで実験を行っているところを1.5Vで実験を行ったため，電流値を精度良く刻んで測定できていなかったと思われる．
+
+
+
+\end{document}
