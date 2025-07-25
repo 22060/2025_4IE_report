@@ -1,0 +1,41 @@
+<style>
+    .link {
+        text-decoration: none;
+        color: #0000FF;
+    }
+    .link:hover {
+        text-decoration: underline;
+        color: #FF0000;
+    }
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 300px;
+        width: 100%;
+    }
+</style>
+<script>
+var stats = 0
+function changestyle(){
+    if (stats == 0) {
+        document.getElementById("today").style = "background: black;color:#a8f8ff ";
+        stats = 1;
+    } else {
+        document.getElementById("today").style = "none";
+        stats = 0;
+    }
+}
+setInterval(changestyle, 300);
+</script>
+<h1><%= @year %>年<%= @month %>月のカレンダー</h1>
+<p>
+<div class="header">
+<a class="link"href="/<%= @pyear %>/<%= @month %>">前年</a>
+<a class="link"href="/<%= @y1 %>/<%= @m1 %>">先月</a>
+<a class="link"href="/">今月</a>
+<a class="link"href="/<%= @y2 %>/<%= @m2 %>">来月</a>
+<a class="link"href="/<%= @nyear %>/<%= @month %>">翌年</a>
+</div>
+<p>
+<%= @t%>

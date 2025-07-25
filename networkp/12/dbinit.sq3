@@ -1,0 +1,24 @@
+drop table if exists datedata;
+create table datedata(
+    id integer primary key,
+    month integer,
+    ischangedata integer,
+    date integer,
+    name varchar(150),
+    color integer
+);
+
+insert into datedata values (1,1,0,1,'gantan',16711680);
+insert into datedata values (2,1,2,2,'seizinnohi',16711680);
+insert into datedata values (3,2,0,11,'kenkokukinenbi',16711680);
+insert into datedata values (4,4,0,29,'syouwa',16711680);
+insert into datedata values (5,5,0,3,'kenpou',16711680);
+insert into datedata values (6,5,0,4,'midori',16711680);
+insert into datedata values (7,5,0,5,'kodomo',16711680);
+insert into datedata values (8,7,3,2,'umi',16711680);
+insert into datedata values (9,8,0,11,'yama',16711680);
+insert into datedata values (10,9,3,2,'keiro',16711680);
+insert into datedata values (11,10,2,2,'sports',16711680);
+insert into datedata values (12,11,0,3,'bunka',16711680);
+insert into datedata values (13,11,0,23,'kinrou',16711680);
+insert into datedata values (14,9,0,14,'birthday',16711680);
