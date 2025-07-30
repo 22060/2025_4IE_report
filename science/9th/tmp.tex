@@ -1,0 +1,160 @@
+\documentclass[a4paper,11pt]{ltjsarticle}
+% 数式
+\usepackage{amsmath,amsfonts}
+\usepackage{bm}
+% 画像
+\usepackage{graphicx}
+\usepackage{circuitikz}
+\usepackage{amsmath,amssymb}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage{tikz}
+\usepackage{askmaps}
+\usepackage{multirow}
+\usepackage{bigstrut}
+\usepackage{slashbox}
+\usepackage{rotating}
+\usepackage{listings}
+% 数式
+\usepackage{physics}
+\usepackage{mathtools}
+% 画像
+\usepackage{subcaption}
+% 表
+\usepackage{makecell}
+% その他
+\usepackage{url}
+\usepackage{ascmac}
+\usepackage{cases}
+\usepackage{here}
+\usepackage{upgreek}
+% 日本語対応
+\usepackage{luatexja}
+\usepackage{luatexja-fontspec}
+
+\AtBeginDocument{\RenewCommandCopy\qty\SI}
+
+
+\definecolor{commentgreen}{RGB}{0,200,0}
+\definecolor{eminence}{RGB}{120,80,250}
+\definecolor{weborange}{RGB}{255,165,0}
+\definecolor{frenchplum}{RGB}{10,150,200}
+\definecolor{commentgreen}{RGB}{0,200,0}
+\definecolor{eminence}{RGB}{120,80,250}
+\definecolor{weborange}{RGB}{255,165,0}
+\definecolor{frenchplum}{RGB}{10,150,200}
+
+\lstset{
+        language = {C},
+        basicstyle = \ttfamily\small,
+        keywordstyle=\color{eminence}\ttfamily\bfseries,
+        commentstyle=\color{commentgreen}\textit,
+    identifierstyle=\color{black}\ttfamily,
+        xleftmargin=.35in,
+        frame=lines,
+    showstringspaces=false,
+        numbers=left,
+        stepnumber = 1,
+        breaklines=true,
+        numberstyle = \ttfamily\normalsize,
+    tabsize=4,  
+        emph={int, int8_t, int16_t, int32_t, int64_t, uint8_t, uint16_t, uint32_t, uint64_t, char, double, float, unsigned, void, bool},
+        emphstyle={\color{blue}}, 
+        morekeywords={>, <, ., ;, +, -, *, /, !, =, ~},
+        breakindent = 10pt, 
+        framexleftmargin=10mm, 
+        columns=fixed,
+        basewidth=0.5em,
+        }
+
+% 特定のスタイル設定
+\lstdefinestyle{customtxt}{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{lightgray},
+  frame=single,
+  breaklines=true,
+  columns=fullflexible,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=4,
+}
+
+\newcommand{\fig}[4]{
+    \begin{figure}[htbp]
+      \centering
+      \includegraphics{./image/#1}
+      \caption{#2}
+      \label{fig:#3}
+    \end{figure}
+  }
+\begin{document}
+
+
+\section{要旨}
+% 結果等を入れて三行程度でミニレポートを書く
+レーザー光を用いた回析・干渉の原理を知り，レーザー光の波長の測定やタンスリットのスリット幅の測定を行う．
+実験した結果，レーザー光の波長が$6.34 \times 10^{-7}$[m]となり，スリット幅が$1.05 \times 10^{-4}$[m]となった．
+レーザー光の理論値が$632.8 \times 10^{-9}$[m]であることから，実験値は理論値に近い値であることが分かった．
+\section{目的}
+% 何を測定して、どのような意味があるのかを書く
+光の回析・干渉を利用することにより，波長がわからないレーザーの波長を調べることが出来る．
+また，波長がわかっているレーザーを用いることにより，幅が小さいスリットの幅を測定することが出来る．
+これらを使用して，波長が未知のレーザーの波長の測定と，スリット幅が未知のスリットの幅の測定を行う．
+\section{実験手順}
+% 実験指導書のページを参照で良い。しかし違うものをした場合は再現できるほど細かく書く
+本実験は追加資料pp.9-12を参考にして行う．
+\section{実験結果}
+% 表/グラフを用いて実験で得たデータを示し、目的とする物理量を求める。最低限有効数字を意識して、さらには不確かさを表示すること
+回折格子を用いてレーザー光の波長を測定した結果を表\ref{tab:laser}に示す．
+この表の単位はすべて[cm]である．そして，回折格子からランプスケールまでの距離$L$は$8.799 \times 10 ^ {-1}$[m]となった．
+また，$\lambda_m$の平均値によりレーザー光の波長を求めると$\lambda = 6.34 \times 10^{-7}$[m]となった．
+単スリットのスリット幅の測定結果を表\ref{tab:slit}に示す．
+この表の単位はすべて[cm]である．そして，単スリットからグラフ用紙までの距離$L$は$8.799 \times 10 ^ {-1}$[m]となった．
+また，$d_m$の平均値によりスリット幅を求めると$d = 1.05 \times 10^{-4}$[m]となった．
+遊動顕微鏡を用いて計測を行った実測値は$1.2\times 10^{-4}$[m]であった．
+\begin{table}[H]
+  \centering
+  \caption{レーザー光の波長の測定結果}
+  \label{tab:laser}
+  \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
+    \hline
+    次数$m$ & $x_{-m}$(左端) & $x_{-m}$(右端) & $x_{+m}$(左端) & $x_{+m}$(右端) & $\lambda_m$           \\
+    \hline
+    1     & 19.30        & 19.51        & 30.50        & 30.70        & $6.35 \times 10^{-5}$ \\
+    \hline
+    2     & 13.69        & 13.85        & 36.10        & 36.31        & $6.32 \times 10^{-5}$ \\
+    \hline
+    3     & 7.90         & 8.01         & 42.00        & 42.20        & $6.35 \times 10^{-5}$ \\
+    \hline
+  \end{tabular}
+\end{table}
+\begin{table}[H]
+  \centering
+  \caption{単スリットのスリット幅の測定結果}
+  \label{tab:slit}
+  \begin{tabular}{|c|c|c|c|c|c|}
+    \hline
+    次数$m$ & $x_{-m}$(左端) & $x_{-m}$(右端) & $x_{+m}$(左端) & $x_{+m}$(右端) & $d_m$                 \\
+    \hline
+    1     & 4.30         & 4.48         & 6.80         & 7.00         & $1.03 \times 10^{-2}$ \\
+    \hline
+    2     & 3.14         & 3.28         & 7.95         & 8.20         & $1.06 \times 10^{-2}$ \\
+    \hline
+    3     & 1.90         & 2.11         & 9.20         & 9.44         & $1.06 \times 10^{-2}$ \\
+    \hline
+  \end{tabular}
+\end{table}
+\section{考察}
+% 実験結果から何がいえるかという問に答えるところ。実験結果が信頼できるのかを論理的に書く。実験指導書の課題もここで答える。新しい実験方法を披露できるとなおよい。最小二乗法は考察
+\subsection{レーザー光の波長の測定}
+レーザー光の波長の測定では精度良く求めることが出来たと思う．もっと精度をあげて測定を行うなら，ランプスケールのメモリの幅をさらに細かいものにしたり，干渉縞の両端をさらに精度よく読む必要がある．
+他の改善案として，レーザーの出力をさらに強くすることにより，縞の両端を見やすくできると思った．
+\subsection{単スリットのスリット幅の測定}
+単スリットのスリット幅の測定では，遊動顕微鏡を用いて計測を行ったが，この実測値と計算した値に大きな差ができていた．
+そこで隙間ゲージを用いて計測を行うと，$1.1\times 10^{-4}$[m]以下$1.0\times 10^{-4}$[m]以上の値となり，実測値よりも計算で求めた値のほうが正確なことがわかった．
+幅のわからない極小のスリット幅を計測するときには，レーザー光による測定が正確な値を確かめることにつながると考察できる．
+
+
+
+\end{document}
