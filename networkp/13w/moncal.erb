@@ -1,0 +1,70 @@
+<style>
+    .link {
+        text-decoration: none;
+        color: #0000FF;
+    }
+    .link:hover {
+        text-decoration: underline;
+        color: #FF0000;
+    }
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 300px;
+        width: 100%;
+    }
+    .tooltip {
+        position: relative; /* ツールチップの位置の基準に */
+        cursor: pointer; /* カーソルを当てたときにポインターに */
+    }
+
+    /* ツールチップのテキスト */
+    .tooltip-text {
+        opacity: 0; /* はじめは隠しておく */
+        visibility: hidden; /* はじめは隠しておく */
+        position: absolute; /* 絶対配置 */
+        left: 50%; /* 親に対して中央配置 */
+        transform: translateX(-50%); /* 親に対して中央配置 */
+        bottom: -30px; /* 親要素下からの位置 */
+        display: inline-block;
+        padding: 5px; /* 余白 */
+        white-space: nowrap; /* テキストを折り返さない */
+        font-size: 0.8rem; /* フォントサイズ */
+        line-height: 1.3; /* 行間 */
+        background: #333; /* 背景色 */
+        color: #fff; /* 文字色 */
+        border-radius: 3px; /* 角丸 */
+        transition: 0.3s ease-in; /* アニメーション */
+    }
+
+    /* ホバー時にツールチップの非表示を解除 */
+    .tooltip:hover .tooltip-text {
+        opacity: 1;
+        visibility: visible;
+    }
+</style>
+<script>
+var stats = 0
+function changestyle(){
+    if (stats == 0) {
+        document.getElementById("today").style = "background: black;color:#a8f8ff ";
+        stats = 1;
+    } else {
+        document.getElementById("today").style = "none";
+        stats = 0;
+    }
+}
+setInterval(changestyle, 300);
+</script>
+<h1><%= @year %>年<%= @month %>月のカレンダー</h1>
+<p>
+<div class="header">
+<a class="link"href="/<%= @pyear %>/<%= @month %>">前年</a>
+<a class="link"href="/<%= @y1 %>/<%= @m1 %>">先月</a>
+<a class="link"href="/">今月</a>
+<a class="link"href="/<%= @y2 %>/<%= @m2 %>">来月</a>
+<a class="link"href="/<%= @nyear %>/<%= @month %>">翌年</a>
+</div>
+<p>
+<%= @t%>

@@ -1,0 +1,24 @@
+drop table if exists datedata;
+create table datedata(
+    id integer primary key,
+    month integer,
+    ischangedata integer,
+    date integer,
+    name varchar(150),
+    color char(6)
+);
+
+insert into datedata values (1,1,0,1,'元旦','e600ff');
+insert into datedata values (2,1,2,2,'成人の日','e600ff');
+insert into datedata values (3,2,0,11,'建国記念日','e600ff');
+insert into datedata values (4,4,0,29,'昭和の日','e600ff');
+insert into datedata values (5,5,0,3,'憲法記念日','e600ff');
+insert into datedata values (6,5,0,4,'みどりの日','e600ff');
+insert into datedata values (7,5,0,5,'こどもの日','e600ff');
+insert into datedata values (8,7,3,2,'海の日','e600ff');
+insert into datedata values (9,8,0,11,'山の日','e600ff');
+insert into datedata values (10,9,3,2,'敬老の日','e600ff');
+insert into datedata values (11,10,2,2,'スポーツの日','e600ff');
+insert into datedata values (12,11,0,3,'文化の日','e600ff');
+insert into datedata values (13,11,0,23,'勤労感謝の日','e600ff');
+insert into datedata values (14,9,0,14,'My birthday','e600ff');
