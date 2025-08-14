@@ -12,7 +12,6 @@
 \usepackage{askmaps}
 \usepackage{multirow}
 \usepackage{bigstrut}
-\usepackage{slashbox}
 \usepackage{rotating}
 \usepackage{listings}
 % 数式
@@ -90,35 +89,728 @@
   }
 \begin{document}
 
-\begin{table}[b]
+\title{情報エレクトロニクス実験III　第12回SQL演習レポート}
+\author{
+  所属：情報エレクトロニクス系\\
+  学籍番号：22060\\
+  組番号：212\\
+  氏名：古城 隆人
+}
+\date{実験日：2025年6月10日}
+\maketitle
+
+\section{目的}
+データを保存する方法はたくさんあるが，その中でも情報の分野で複数人で使うことを目的として作られたMySQLを用いて実験を行い，データベースを使用する方法を学ぶ．
+また，データの正規化を行うことにより効率よくデータを保存したり，属性ごとの種類を見やすくする．この正規化に浮いても手法を学び実際に行うことにより理解を深める．
+\section{原理}
+\subsection{データベースとはなにか}
+データベースとは，データを効率よく保存するものであり，データの検索や更新，また共有をしやすくするために構造化したものである．今回の実験ではデータベースを操作するための言語であるSQLを用いる．
+\subsection{SQLとはなにか}
+SQLとは，前述の通りデータベースを操作するための言語である．データベースにはDBMSというデータベースを管理するシステムが有り，そこにSQLのコマンドを渡すことでデータベースに変更を加えたり検索を行ったりしている．コマンドは国際的に標準化されており，様々なデータベースを同じコマンドで操作することができる．
+\section{実験}
+目標を達成するために行った実験について実験環境と実験の方法について述べる．
+\subsection{実験環境}
+実験環境を表\ref{tab:environment}に示す．ただし，()の中身は環境等のバージョンを示している．
+\begin{table}[H]
+  \caption{実装環境}
   \centering
-  \begin{tabular}{c|l}
+  \begin{tabular}{|c|c|}
     \hline
-    氏名                   & 古城隆人             \\
+    OS(オペレーションシステム)   & Windows 11 Pro (24H2)        \\
     \hline
-    学籍番号                 & 22060            \\
+    開発環境              & Windows 11 Pro (24H2)        \\
     \hline
-    組番号                  & 212              \\
+    データベース            & MySQL (8.4.5)                \\
     \hline
-    所属                   & 情報エレクトロニクス 情報コース \\
+    CPU(中央処理装置)       & インテル® Core™ i7-11800H プロセッサー \\
     \hline
-    \multirow{5}{*}{実験日} & 2025年6月27日       \\
-                         & 2025年7月4日        \\
-                         & 2025年7月11日       \\
-                         & 2025年7月25日       \\
-                         & 2025年8月1日        \\
+    メモリ               & 16GB                         \\
     \hline
-    提出日                  & \today           \\
+    SSD(ソリッドステートドライブ) & 512GB                        \\
+    \hline
+  \end{tabular}
+  \label{tab:environment}
+\end{table}
+\subsection{実験課題}
+実験は課題を達成することを目標に行った．
+課題は1~3ある．それぞれいかに示す．
+\subsection{課題1}
+表\ref{tab:rawdata}に示すデータについて正規化を行うものである．
+正規化とは，データベースにおいてデータの冗長性を排除して
+効率的にデータを保存する手法である．今回は第一正規化,第二正規化,第三正規化について行う．
+\begin{table}[htbp]
+  \centering
+  \caption{学生成績一覧} % 表のキャプション
+  \label{tab:rawdata}
+  \resizebox{\textwidth}{!}{%
+    \begin{tabular}{|c|c|c|c|c|c|l|c|c|c|c|c|} % ← ここが修正ポイント
+      \hline
+      \textbf{学籍番号}          & \textbf{学生名}           & \textbf{年齢}         & \textbf{性別}        & \textbf{系}                   & \textbf{校舎}         & \textbf{科目名} & \textbf{点数} & \textbf{判定} & \textbf{教員コード} & \textbf{教員名} & \textbf{入力日} \\
+      \hline
+
+      % --- 1人目: 山川 一郎 ---
+      \multirow{3}{*}{26401} & \multirow{3}{*}{山川 一郎} & \multirow{3}{*}{18} & \multirow{3}{*}{男} & \multirow{3}{*}{都市デザイン系}     & \multirow{3}{*}{C棟} & 国語           & 65          & 可           & G002           & 長松 次郎        & 2025-06-10   \\ \cline{7-12}
+                             &                        &                     &                    &                              &                     & 物理           & 42          & 不可          & G001           & 長松 遥         & 2025-06-11   \\ \cline{7-12}
+                             &                        &                     &                    &                              &                     & 現代社会         & 79          & 良           & G005           & 高田 真由        & 2025-06-14   \\
+      \hline
+
+      % --- 2人目: 谷泉 太郎 ---
+      \multirow{3}{*}{26205} & \multirow{3}{*}{谷泉 太郎} & \multirow{3}{*}{19} & \multirow{3}{*}{男} & \multirow{3}{*}{情報エレクトロニクス系} & \multirow{3}{*}{B棟} & 物理           & 76          & 良           & G001           & 長松 遥         & 2025-06-11   \\ \cline{7-12}
+                             &                        &                     &                    &                              &                     & 電気工学         & 66          & 可           & E012           & 三浦 裕         & 2025-06-12   \\ \cline{7-12}
+                             &                        &                     &                    &                              &                     & 信号処理         & 90          & 優           & E012           & 三浦 裕         & 2025-06-12   \\
+      \hline
+
+      % --- 3人目: 海土 花子 ---
+      \multirow{3}{*}{26132} & \multirow{3}{*}{海土 花子} & \multirow{3}{*}{20} & \multirow{3}{*}{女} & \multirow{3}{*}{機械ロボティクス系}   & \multirow{3}{*}{A棟} & 物理           & 87          & 優           & G001           & 長松 遥         & 2025-06-10   \\ \cline{7-12}
+                             &                        &                     &                    &                              &                     & 機械力学         & 78          & 良           & M301           & 上条 雄三        & 2025-06-11   \\ \cline{7-12}
+                             &                        &                     &                    &                              &                     & 計測工学         & 100         & 優           & M553           & 西岡 剛         & 2025-06-12   \\
+      \hline
+    \end{tabular}
+  }
+\end{table}
+\subsubsection{第一正規化}
+第一正規化とは，「テーブルの行と列が交差する特定の1マスに1つの値しか含まない状態にする」ことであるため，
+今回の場合は縦のセルについて結合されているところがあるため，セル結合を解除することにより第一正規化が完了する．
+\subsubsection{第二正規化}
+第二正規化では，主キーという概念を用いてデータの冗長性を排除する．主キーとは，あるものが確定するとそれ以外の情報が確定するものである．
+例えば学籍番号から学生に関するデータが確定でき，科目名から科目に関するデータを一つに確定することが出来る．
+このような従属している関係を抜き取るのが第二正規化であるため，今回は学籍番号-学生に関するデータ,
+科目名-科目に関するデータ,学籍番号と科目名-成績に関するデータとして，3種類の表に分けることが出来る．
+\subsubsection{第三正規化}
+第二正規化が終わったデータについて，このデータにも冗長性がある．例えば学生に関するデータでは，
+校舎に関するデータがあるが，この校舎は学生によって決まっているのではなく，学生が所属している学科によって決まっているので，学籍番号からは間接的なつながりしかない．
+そのためこの従属関係を切り離して保存するのが第三正規化である．
+そのため，第三正規化では学生,成績,系,校舎,科目,教員,判定,性別をそれぞれ別の表に分けることが出来る．
+
+\subsection{課題2}
+課題1で正規化を行ったデータを用いて，SQLを用いてデータベースの作成を行う．
+また，SELECT文を用いて入力されたデータがしっかりと格納されているかを確認する．
+\subsection{課題3}
+課題2で登録したデータに対し，SELECT文を用いてそれぞれの問いに答える．
+問については以下に列挙する．
+\begin{itemize}
+  \item 第 1 正規化したときの表を表示する SQL を定義せよ．
+  \item いずれかの科目で判定が優である学生の学籍番号，氏名，系を問い合わせるための SQL
+        文を実行し，実行結果を示せ．ただし，条件文は「80 点以上」とせず，「判定が優であ
+        る」とすること．
+  \item 担当が「高田」または「三浦」の科目を履修している学生について，学生名，科目名，担
+        当，判定を問い合わせる SQL 文を実行し，実行結果を示せ． ただし，表示するレコー
+        ドは「高田」または「三浦」が担当している科目のもののみでよい．
+  \item 科目名に「学」が含まれる科目について，履修している学生名，科目名，点数を問い合
+        わせる SQL 文を実行し，実行結果を示せ．
+  \item 担当が「三浦」の科目の平均点を問い合わせる SQL 文を実行し，実行結果を示せ．
+\end{itemize}
+\section{結果}
+実験で入力したコマンドとその結果等を示す．
+\subsection{課題1}
+表\ref{tab:rawdata}のデータを正規化したものについて，第一正規化を表\ref{tab:normarlized1}，
+第二正規化したものを表\ref{tab:normalized2_student}と表\ref{tab:normalized2_subject}と表\ref{tab:normalized2_teacher}に示す．
+第三正規化したものをについて，学生,成績,系,校舎,科目,教員,判定,性別をそれぞれ
+表\ref{tab:normalized3_student}, \ref{tab:normalized3_subject}, \ref{tab:normalized3_department}, \ref{tab:normalized3_campus}, \ref{tab:normalized3_subjects}, \ref{tab:normalized3_teacher}, \ref{tab:normalized3_judgment}
+, \ref{tab:normalized3_gender}に示す．
+また，第三正規化した結果を ER 図として図\ref{fig:er_diagram}に示す．
+\begin{table}[htbp]
+  \centering
+  \caption{第1正規化}
+  \label{tab:normarlized1}
+  \resizebox{\textwidth}{!}{%
+    \begin{tabular}{|c|c|c|c|c|c|l|c|c|c|c|c|}
+      \hline
+      \textbf{学籍番号} & \textbf{学生名} & \textbf{年齢} & \textbf{性別} & \textbf{系}  & \textbf{校舎} & \textbf{科目名} & \textbf{点数} & \textbf{判定} & \textbf{教員コード} & \textbf{教員名} & \textbf{入力日} \\
+      \hline
+
+      % --- 1人目: 山川 一郎 ---
+      \hline
+      26401         & 山川 一郎        & 18          & 男           & 都市デザイン系     & C棟          & 国語           & 65          & 可           & G002           & 長松 次郎        & 2025-06-10   \\
+      \hline
+      26401         & 山川 一郎        & 18          & 男           & 都市デザイン系     & C棟          & 物理           & 42          & 不可          & G001           & 長松 遥         & 2025-06-11   \\
+      \hline
+      26401         & 山川 一郎        & 18          & 男           & 都市デザイン系     & C棟          & 現代社会         & 79          & 良           & G005           & 高田 真由        & 2025-06-14   \\
+      \hline
+
+      % --- 2人目: 谷泉 太郎 ---
+      26205         & 谷泉 太郎        & 19          & 男           & 情報エレクトロニクス系 & B棟          & 物理           & 76          & 良           & G001           & 長松 遥         & 2025-06-11   \\
+      \hline
+      26205         & 谷泉 太郎        & 19          & 男           & 情報エレクトロニクス系 & B棟          & 電気工学         & 66          & 可           & E012           & 三浦 裕         & 2025-06-12   \\
+      \hline
+      26205         & 谷泉 太郎        & 19          & 男           & 情報エレクトロニクス系 & B棟          & 信号処理         & 90          & 優           & E012           & 三浦 裕         & 2025-06-12   \\
+      \hline
+
+      % --- 3人目: 海土 花子 ---
+      26132         & 海土 花子        & 20          & 女           & 機械ロボティクス系   & A棟          & 物理           & 87          & 優           & G001           & 長松 遥         & 2025-06-10   \\
+      \hline
+      26132         & 海土 花子        & 20          & 女           & 機械ロボティクス系   & A棟          & 機械力学         & 78          & 良           & M301           & 上条 雄三        & 2025-06-11   \\
+      \hline
+      26132         & 海土 花子        & 20          & 女           & 機械ロボティクス系   & A棟          & 計測工学         & 100         & 優           & M553           & 西岡 剛         & 2025-06-12   \\
+      \hline
+    \end{tabular}
+  }
+\end{table}
+\begin{table}[htbp]
+  \centering
+  \caption{第2正規化 学生に関するテーブル}
+  \label{tab:normalized2_student}
+  \begin{tabular}{|c|c|c|c|c|c|}
+    \hline
+    \textbf{学籍番号} & \textbf{学生名} & \textbf{年齢} & \textbf{性別} & \textbf{系}  & \textbf{校舎} \\
+    \hline
+
+    % --- 1人目: 山川 一郎 ---
+    26401         & 山川 一郎        & 18          & 男           & 都市デザイン系     & C棟          \\
+    \hline
+
+    % --- 2人目: 谷泉 太郎 ---
+    26205         & 谷泉 太郎        & 19          & 男           & 情報エレクトロニクス系 & B棟          \\
+    \hline
+
+    % --- 3人目: 海土 花子 ---
+    26132         & 海土 花子        & 20          & 女           & 機械ロボティクス系   & A棟          \\
     \hline
   \end{tabular}
 \end{table}
+\begin{table}[htbp]
+  \centering
+  \caption{第2正規化成績に関するテーブル}
+  \label{tab:normalized2_subject}
+  \begin{tabular}{|c|c|c|c|c|}
+    \hline
+    \textbf{学籍番号} & \textbf{科目名} & \textbf{点数} & \textbf{判定} & \textbf{入力日} \\
+    \hline
+
+    % --- 1人目: 山川 一郎 ---
+    26401         & 国語           & 65          & 可           & 2025-06-10   \\
+    \hline
+    26401         & 物理           & 42          & 不可          & 2025-06-11   \\
+    \hline
+    26401         & 現代社会         & 79          & 良           & 2025-06-14   \\
+    \hline
+
+    % --- 2人目: 谷泉 太郎 ---
+    26205         & 物理           & 76          & 良           & 2025-06-11   \\
+    \hline
+    26205         & 電気工学         & 66          & 可           & 2025-06-12   \\
+    \hline
+    26205         & 信号処理         & 90          & 優           & 2025-06-12   \\
+    \hline
+
+    % --- 3人目: 海土 花子 ---
+    26132         & 物理           & 87          & 優           & 2025-06-10   \\
+    \hline
+    26132         & 機械力学         & 78          & 良           & 2025-06-11   \\
+    \hline
+    26132         & 計測工学         & 100         & 優           & 2025-06-12   \\
+    \hline
+  \end{tabular}
+\end{table}
+\begin{table}[htbp]
+  \centering
+  \caption{第2正規化 教師に関するテーブル}
+  \label{tab:normalized2_teacher}
+  \begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{科目名} & \textbf{教員コード} & \textbf{教員名} \\
+    \hline
+
+    % --- 1人目: 山川 一郎 ---
+    国語           & G002           & 長松 次郎        \\ \hline
+    物理           & G001           & 長松 遥         \\ \hline
+    現代社会         & G005           & 高田 真由        \\
+    \hline
+
+    % --- 2人目: 谷泉 太郎 ---
+    電気工学         & E012           & 三浦 裕         \\ \hline
+    信号処理         & E012           & 三浦 裕         \\
+    \hline
+
+    % --- 3人目: 海土 花子 ---
+    機械力学         & M301           & 上条 雄三        \\ \hline
+    計測工学         & M553           & 西岡 剛         \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{table}[htbp] %学生
+  \centering
+  \caption{第3正規化 学生に関するデータ}
+  \label{tab:normalized3_student}
+  \begin{tabular}{|c|c|c|c|c|}
+    \hline
+    \textbf{学籍番号} & \textbf{学生名} & \textbf{年齢} & \textbf{性別ID} & \textbf{系ID} \\
+    \hline
+
+    26401         & 山川 一郎        & 18          & 1             & 3            \\
+    \hline
+
+    26205         & 谷泉 太郎        & 19          & 1             & 2            \\
+    \hline
+
+    26132         & 海土 花子        & 20          & 2             & 1            \\
+    \hline
+  \end{tabular}
+\end{table}
+\begin{table}[htbp] %成績
+  \centering
+  \caption{第3正規化 成績に関するデータ}
+  \label{tab:normalized3_subject}
+  \begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{学籍番号} & \textbf{科目ID} & \textbf{点数} & \textbf{入力日} \\
+    \hline
+
+    % --- 1人目: 山川 一郎 ---
+    26401         & 10003         & 65          & 2025-06-10   \\
+    26401         & 10001         & 42          & 2025-06-11   \\
+    26401         & 10002         & 79          & 2025-06-14   \\
+    \hline
+
+    % --- 2人目: 谷泉 太郎 ---
+    26205         & 10001         & 76          & 2025-06-11   \\
+    26205         & 10004         & 66          & 2025-06-12   \\
+    26205         & 10005         & 90          & 2025-06-12   \\
+    \hline
+
+    % --- 3人目: 海土 花子 ---
+    26132         & 10001         & 87          & 2025-06-10   \\
+    26132         & 10006         & 78          & 2025-06-11   \\
+    26132         & 10007         & 100         & 2025-06-12   \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{table}[htbp] %系
+  \centering
+  \caption{第3正規化 系に関するデータ}
+  \label{tab:normalized3_department}
+  \begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{系ID} & \textbf{系}  & \textbf{校舎ID} \\
+    \hline
+
+    1            & 機械ロボティクス系   & 30001         \\
+    \hline
+
+    2            & 情報エレクトロニクス系 & 30002         \\
+    \hline
+
+    3            & 都市デザイン系     & 30003         \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{table}[htbp] %校舎
+  \centering
+  \caption{第3正規化 校舎に関するデータ}
+  \label{tab:normalized3_campus}
+  \begin{tabular}{|c|c|}
+    \hline
+    \textbf{校舎ID} & \textbf{校舎} \\
+    \hline
+
+    30001         & A棟          \\
+    \hline
+
+    30002         & B棟          \\
+    \hline
+
+    30003         & C棟          \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{table}[htbp] %科目
+  \centering
+  \caption{第3正規化 科目に関するデータ}
+  \label{tab:normalized3_subjects}
+  \begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{科目ID} & \textbf{科目名} & \textbf{教員コード} \\
+    \hline
+
+    10001         & 物理           & G001           \\ \hline
+    10002         & 現代社会         & G005           \\ \hline
+    10003         & 国語           & G002           \\ \hline
+    10004         & 電気工学         & E012           \\ \hline
+    10005         & 信号処理         & E012           \\ \hline
+    10006         & 機械力学         & M301           \\ \hline
+    10007         & 計測工学         & M553           \\ \hline
+  \end{tabular}
+\end{table}
+
+\begin{table}[htbp] %教員
+  \centering
+  \caption{第3正規化 教員に関するデータ}
+  \label{tab:normalized3_teacher}
+  \begin{tabular}{|c|c|}
+    \hline
+    \textbf{教員コード} & \textbf{教員名} \\
+    \hline
+
+    G002           & 長松 次郎        \\ \hline
+    G001           & 長松 遥         \\ \hline
+    G005           & 高田 真由        \\ \hline
+    E012           & 三浦 裕         \\ \hline
+    E012           & 三浦 裕         \\ \hline
+    M301           & 上条 雄三        \\ \hline
+    M553           & 西岡 剛         \\ \hline
+  \end{tabular}
+\end{table}
+
+\begin{table}[htbp] %判定
+  \centering
+  \caption{第3正規化 判定に関するデータ}
+  \label{tab:normalized3_judgment}
+  \begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{判定ID} & \textbf{下限} & \textbf{上限} & \textbf{判定} \\
+    \hline
+
+    1             & 0           & 59          & 不可          \\
+    \hline
+    2             & 60          & 69          & 可           \\
+    \hline
+    3             & 70          & 79          & 良           \\
+    \hline
+    4             & 80          & 100         & 優           \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{table}[htbp] %性別
+  \centering
+  \caption{第3正規化 性別に関するデータ}
+  \label{tab:normalized3_gender}
+  \begin{tabular}{|c|c|}
+    \hline
+    \textbf{性別ID} & \textbf{性別} \\
+    \hline
+
+    1             & 男           \\
+    \hline
+
+    2             & 女           \\
+    \hline
+  \end{tabular}
+\end{table}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth]{./image/ER図0.png}
+  \caption{ER図}
+  \label{fig:er_diagram}
+\end{figure}
 \newpage
-\section{目的}
-\section{原理}
-\section{実験}
-\subsection{実験環境}
-\subsection{実験課題}
-\section{結果}
+\clearpage
+\subsection{課題2}
+課題1でER図を作成した際に，各カラムについても設定を行い，そこからSQL文をエクスポートし，テーブルの作成を行あ多後にデータの挿入を行った．
+作成したSQL文を\ref{lst:sql}に示す．
+実行結果を\ref{lst:sql_result}に示す．
+\begin{lstlisting}[style=customtxt, caption={SQL文}, label={lst:sql}]
+  CREATE DATABASE IF NOT EXISTS kadai;
+
+USE kadai;
+
+DROP TABLE IF EXISTS scores;
+
+DROP TABLE IF EXISTS student;
+
+DROP TABLE IF EXISTS course;
+
+DROP TABLE IF EXISTS subject;
+
+DROP TABLE IF EXISTS place;
+
+DROP TABLE IF EXISTS teacher;
+
+DROP TABLE IF EXISTS gender;
+
+DROP TABLE IF EXISTS result;
+
+CREATE TABLE
+    result (
+        id INT NOT NULL PRIMARY KEY,
+        max INT,
+        min INT,
+        result VARCHAR(2) NOT NULL
+    );
+
+CREATE TABLE
+    gender (id INT NOT NULL PRIMARY KEY, gender CHAR(4));
+
+CREATE TABLE
+    teacher (
+        teacher_id CHAR(4) NOT NULL PRIMARY KEY,
+        name VARCHAR(40) NOT NULL
+    );
+
+CREATE TABLE
+    place (
+        id INT NOT NULL PRIMARY KEY,
+        place VARCHAR(40) NOT NULL
+    );
+
+CREATE TABLE
+    subject (
+        id INT NOT NULL PRIMARY KEY,
+        subject VARCHAR(40) NOT NULL,
+        teacher_id CHAR(4) NOT NULL,
+        FOREIGN KEY (teacher_id) REFERENCES teacher (teacher_id)
+    );
+
+CREATE TABLE
+    course (
+        id INT NOT NULL PRIMARY KEY,
+        course VARCHAR(40) NOT NULL,
+        place_id INT,
+        FOREIGN KEY (place_id) REFERENCES place (id)
+    );
+
+CREATE TABLE
+    student (
+        code CHAR(5) NOT NULL PRIMARY KEY,
+        name VARCHAR(40) NOT NULL,
+        age INT,
+        icourse_d INT,
+        gender_id INT,
+        FOREIGN KEY (icourse_d) REFERENCES course (id),
+        FOREIGN KEY (gender_id) REFERENCES gender (id)
+    );
+
+CREATE TABLE
+    scores (
+        id INT NOT NULL,
+        code CHAR(5) NOT NULL,
+        score INT NOT NULL,
+        date DATE NOT NULL,
+        PRIMARY KEY (id, code),
+        FOREIGN KEY (id) REFERENCES subject (id),
+        FOREIGN KEY (code) REFERENCES student (code)
+    );
+
+INSERT INTO
+    result (id, max, min, result)
+VALUES
+    (1, 59, 0, '不可'),
+    (2, 69, 60, '可'),
+    (3, 79, 70, '良'),
+    (4, 100, 80, '優');
+
+INSERT INTO
+    gender (id, gender)
+VALUES
+    (1, '男'),
+    (2, '女');
+
+INSERT INTO
+    teacher (teacher_id, name)
+VALUES
+    ('G002', '長松 次郎'),
+    ('G001', '長松 遥'),
+    ('G005', '高田 真由'),
+    ('E012', '三浦 裕'),
+    ('M301', '上条 雄三'),
+    ('M553', '西岡 剛');
+
+INSERT INTO
+    place (id, place)
+VALUES
+    (1, 'C棟'),
+    (2, 'B棟'),
+    (3, 'A棟');
+
+INSERT INTO
+    subject (id, subject, teacher_id)
+VALUES
+    (1, '国語', 'G002'),
+    (2, '物理', 'G001'),
+    (3, '現代社会', 'G005'),
+    (4, '電気工学', 'E012'),
+    (5, '信号処理', 'E012'),
+    (6, '機械力学', 'M301'),
+    (7, '計測工学', 'M553');
+
+INSERT INTO
+    course (id, course, place_id)
+VALUES
+    (1, '都市デザイン系', 1),
+    (2, '情報エレクトロニクス系', 2),
+    (3, '機械ロボティクス系', 3);
+
+INSERT INTO
+    student (code, name, age, icourse_d, gender_id)
+VALUES
+    ('26401', '山川 一郎', 18, 1, 1),
+    ('26205', '谷泉 太郎', 19, 2, 1),
+    ('26132', '海土 花子', 20, 3, 2);
+
+INSERT INTO
+    scores (id, code, score, date)
+VALUES
+    (1, '26401', 65, '2025-06-10'),
+    (2, '26401', 42, '2025-06-11'),
+    (3, '26401', 79, '2025-06-14'),
+    (2, '26205', 76, '2025-06-11'),
+    (4, '26205', 66, '2025-06-12'),
+    (5, '26205', 90, '2025-06-12'),
+    (2, '26132', 87, '2025-06-10'),
+    (6, '26132', 78, '2025-06-11'),
+    (7, '26132', 100, '2025-06-12');
+
+SELECT * FROM result;
+SELECT * FROM gender;
+SELECT * FROM teacher;
+SELECT * FROM place;
+SELECT * FROM subject;
+SELECT * FROM course;
+SELECT * FROM student;
+SELECT * FROM scores;
+\end{lstlisting}
+
+\begin{lstlisting}[style=customtxt, caption={SQL実行結果}, label={lst:sql_result}]
+  mysql> source C:\Users\kojor_fyn5sjo\2025\report\informationIII\10w\students.sql
+Query OK, 1 row affected, 1 warning (0.08 sec)
+
+Database changed
+Query OK, 0 rows affected (0.14 sec)
+
+Query OK, 0 rows affected (0.07 sec)
+
+Query OK, 0 rows affected (0.06 sec)
+
+Query OK, 0 rows affected (0.05 sec)
+
+Query OK, 0 rows affected (0.03 sec)
+
+Query OK, 0 rows affected (0.03 sec)
+
+Query OK, 0 rows affected (0.04 sec)
+
+Query OK, 0 rows affected (0.04 sec)
+
+Query OK, 0 rows affected (0.18 sec)
+
+Query OK, 0 rows affected (0.05 sec)
+
+Query OK, 0 rows affected (0.05 sec)
+
+Query OK, 0 rows affected (0.06 sec)
+
+Query OK, 0 rows affected (0.08 sec)
+
+Query OK, 0 rows affected (0.07 sec)
+
+Query OK, 0 rows affected (0.08 sec)
+
+Query OK, 0 rows affected (0.08 sec)
+
+Query OK, 4 rows affected (0.02 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+Query OK, 2 rows affected (0.01 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+Query OK, 6 rows affected (0.02 sec)
+Records: 6  Duplicates: 0  Warnings: 0
+
+Query OK, 3 rows affected (0.01 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+Query OK, 7 rows affected (0.01 sec)
+Records: 7  Duplicates: 0  Warnings: 0
+
+Query OK, 3 rows affected (0.01 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+Query OK, 3 rows affected (0.01 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+Query OK, 9 rows affected (0.01 sec)
+Records: 9  Duplicates: 0  Warnings: 0
+
++----+------+------+--------+
+| id | max  | min  | result |
++----+------+------+--------+
+|  1 |   59 |    0 | 不可   |
+|  2 |   69 |   60 | 可     |
+|  3 |   79 |   70 | 良     |
+|  4 |  100 |   80 | 優     |
++----+------+------+--------+
+4 rows in set (0.01 sec)
+
++----+--------+
+| id | gender |
++----+--------+
+|  1 | 男     |
+|  2 | 女     |
++----+--------+
+2 rows in set (0.00 sec)
+
++------------+---------------+
+| teacher_id | name          |
++------------+---------------+
+| E012       | 三浦 裕       |
+| G001       | 長松 遥       |
+| G002       | 長松 次郎     |
+| G005       | 高田 真由     |
+| M301       | 上条 雄三     |
+| M553       | 西岡 剛       |
++------------+---------------+
+6 rows in set (0.00 sec)
+
++----+-------+
+| id | place |
++----+-------+
+|  1 | C棟   |
+|  2 | B棟   |
+|  3 | A棟   |
++----+-------+
+3 rows in set (0.00 sec)
+
++----+--------------+------------+
+| id | subject      | teacher_id |
++----+--------------+------------+
+|  1 | 国語         | G002       |
+|  2 | 物理         | G001       |
+|  3 | 現代社会     | G005       |
+|  4 | 電気工学     | E012       |
+|  5 | 信号処理     | E012       |
+|  6 | 機械力学     | M301       |
+|  7 | 計測工学     | M553       |
++----+--------------+------------+
+7 rows in set (0.00 sec)
+
++----+-----------------------------------+----------+
+| id | course                            | place_id |
++----+-----------------------------------+----------+
+|  1 | 都市デザイン系                    |        1 |
+|  2 | 情報エレクトロニクス系            |        2 |
+|  3 | 機械ロボティクス系                |        3 |
++----+-----------------------------------+----------+
+3 rows in set (0.00 sec)
+
++-------+---------------+------+-----------+-----------+
+| code  | name          | age  | icourse_d | gender_id |
++-------+---------------+------+-----------+-----------+
+| 26132 | 海土 花子     |   20 |         3 |         2 |
+| 26205 | 谷泉 太郎     |   19 |         2 |         1 |
+| 26401 | 山川 一郎     |   18 |         1 |         1 |
++-------+---------------+------+-----------+-----------+
+3 rows in set (0.00 sec)
+
++----+-------+-------+------------+
+| id | code  | score | date       |
++----+-------+-------+------------+
+|  1 | 26401 |    65 | 2025-06-10 |
+|  2 | 26132 |    87 | 2025-06-10 |
+|  2 | 26205 |    76 | 2025-06-11 |
+|  2 | 26401 |    42 | 2025-06-11 |
+|  3 | 26401 |    79 | 2025-06-14 |
+|  4 | 26205 |    66 | 2025-06-12 |
+|  5 | 26205 |    90 | 2025-06-12 |
+|  6 | 26132 |    78 | 2025-06-11 |
+|  7 | 26132 |   100 | 2025-06-12 |
++----+-------+-------+------------+
+9 rows in set (0.00 sec)
+\end{lstlisting}
+\subsection{課題3}
 \section{考察}
 \section{報告事項}
 \section{考察}
