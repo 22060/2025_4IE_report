@@ -503,7 +503,7 @@ SQLとは，前述の通りデータベースを操作するための言語で�
 課題1でER図を作成した際に，各カラムについても設定を行い，そこからSQL文をエクスポートし，テーブルの作成を行あ多後にデータの挿入を行った．
 作成したSQL文を\ref{lst:sql}に示す．
 実行結果を\ref{lst:sql_result}に示す．
-\begin{lstlisting}[style=customtxt, caption={SQL文}, label={lst:sql}]
+\begin{lstlisting}[caption={SQL文}, label={lst:sql}]
   CREATE DATABASE IF NOT EXISTS kadai;
 
 USE kadai;
@@ -664,7 +664,7 @@ SELECT * FROM student;
 SELECT * FROM scores;
 \end{lstlisting}
 
-\begin{lstlisting}[style=customtxt, caption={SQL実行結果}, label={lst:sql_result}]
+\begin{lstlisting}[caption={SQL実行結果}, label={lst:sql_result}]
   mysql> source C:\Users\kojor_fyn5sjo\2025\report\informationIII\10w\students.sql
 Query OK, 1 row affected, 1 warning (0.08 sec)
 
@@ -811,9 +811,123 @@ Records: 9  Duplicates: 0  Warnings: 0
 9 rows in set (0.00 sec)
 \end{lstlisting}
 \subsection{課題3}
+それぞれの問いに対するSQL文を以下に示す．
+\subsubsection{問1}
+inner JOINでテーブルを結合させ，カラムをカラム名にて指定してデータを表示している．
+\begin{lstlisting}
+  SELECT
+    student.code,
+    student.name,
+    student.age,
+    gender.gender,
+    course.course,
+    place.place,
+    subject.subject,
+    scores.score,
+    result.result,
+    teacher.teacher_id,
+    teacher.name AS teacher_name,
+    scores.date
+FROM
+    scores
+    inner JOIN student ON scores.code = student.code
+    inner JOIN course ON student.icourse_d = course.id
+    inner JOIN place ON course.place_id = place.id
+    inner JOIN gender ON student.gender_id = gender.id
+    inner JOIN subject ON scores.id = subject.id
+    inner JOIN result ON scores.score between result.min and result.max
+    inner JOIN teacher ON subject.teacher_id = teacher.teacher_id
+ORDER BY student.code DESC, subject.id ASC;
+\end{lstlisting}
+\subsubsection{問2}
+DISTINCTを入れることにより重複データを消している．基本的にやっていることは問1と変わらないが，WHERE文を用いて成績の判定によりデータの選別を行っている．
+\begin{lstlisting}
+  SELECT DISTINCT
+    student.code,
+    student.name,
+    course.course
+FROM
+    scores
+    inner JOIN student ON scores.code = student.code
+    inner JOIN course ON student.icourse_d = course.id
+    inner JOIN place ON course.place_id = place.id
+    inner JOIN gender ON student.gender_id = gender.id
+    inner JOIN subject ON scores.id = subject.id
+    inner JOIN result ON scores.score between result.min and result.max
+    inner JOIN teacher ON subject.teacher_id = teacher.teacher_id
+WHERE
+    result.result = '優';
+\end{lstlisting}
+\subsubsection{問3}
+やっていることは問2とほぼ変わらないが，WHERE文にてワイルドカード検索というもの(LIKE文)を用いている．これは検索に関係のない文字列を一つの文字として扱っているものである．
+\begin{lstlisting}
+  SELECT
+    student.name,
+    subject.subject,
+    teacher.name AS teacher_name
+FROM
+    scores
+    inner JOIN student ON scores.code = student.code
+    inner JOIN course ON student.icourse_d = course.id
+    inner JOIN place ON course.place_id = place.id
+    inner JOIN gender ON student.gender_id = gender.id
+    inner JOIN subject ON scores.id = subject.id
+    inner JOIN result ON scores.score between result.min and result.max
+    inner JOIN teacher ON subject.teacher_id = teacher.teacher_id
+WHERE
+    teacher.name LIKE '%高田%'
+    OR teacher.name LIKE '%三浦%';
+\end{lstlisting}
+\subsubsection{問4}
+これもやっていることは問3と変わらない．
+\begin{lstlisting}
+  SELECT
+    student.name,
+    subject.subject,
+    scores.score
+FROM
+    scores
+    inner JOIN student ON scores.code = student.code
+    inner JOIN course ON student.icourse_d = course.id
+    inner JOIN place ON course.place_id = place.id
+    inner JOIN gender ON student.gender_id = gender.id
+    inner JOIN subject ON scores.id = subject.id
+    inner JOIN result ON scores.score between result.min and result.max
+    inner JOIN teacher ON subject.teacher_id = teacher.teacher_id
+WHERE
+    subject.subject LIKE '%学%';
+\end{lstlisting}
+\subsubsection{問5}
+これはやっていることはほぼ問4と同じだが，SELECT分のカラムの指定のとこで関数を用いている．AVG関数は引数のカラムについての平均をとってくれる関数であり，今回はWHEREにて絞った条件での平均を出している．
+\begin{lstlisting}
+  SELECT
+    AVG(scores.score) AS avg
+FROM
+    scores
+    inner JOIN student ON scores.code = student.code
+    inner JOIN course ON student.icourse_d = course.id
+    inner JOIN place ON course.place_id = place.id
+    inner JOIN gender ON student.gender_id = gender.id
+    inner JOIN subject ON scores.id = subject.id
+    inner JOIN result ON scores.score between result.min and result.max
+    inner JOIN teacher ON subject.teacher_id = teacher.teacher_id
+WHERE
+    teacher.name LIKE '%三浦%';
+\end{lstlisting}
 \section{考察}
-\section{報告事項}
-\section{考察}
+今回の実験を通して得られた，第三正規までの正規化は大量のデータを保存して検索するときに有用であるという考察について述べる．
+\subsection{データの圧縮性}
+今回は主にデータベースについて知ること，またデータの冗長性を排除して効率よく保存することについて学んできた．
+しかし効率よくの観点で見ると実際には効率が悪く保存されているかもしれない．その理由として，元のデータ性が少ないため冗長性がほぼみられなかった．そのため元のデータ数よりも第三正規化した後のデータの数のほうが多くなってしまい，実際には効率性が落ちてしまっているのではないかと思った．
+生徒三件についてのデータのみを保存する場合は，第一正規化までにして保存したほうが圧縮率が保たれているのかもしれない．
+しかし，これが生徒200人などの規模になってくると，実際のデータをそのまま保存するよりも統計データのとりやすさ，また検索のしやすさからみて第三正規化までを行ったほうがいいのかもしれない．
+\subsection{第三正規化後のデータの保存と運用}
+データベースの設計とある程度のサンプルデータについて，手動で入力することにより実験を行ったが，実際にはSQLはプログラムなどから打つことになるだろう．その場合，成績入力受付システム等がSQLを発行することになる．この場合の問題が，複数のテーブルにデータを保存しないといけないという点だ．例えば生徒Aについて今までにない科目を成績に登録した場合書き換えないといけないテーブルは4つある．しかし新しい科目を新設して学生データを入力する際は変更するテーブルが2つである．このように，何を変更するかにより変更するテーブルの数が変わるため，複雑になる．
+複雑になることによりプログラムのミス等が増える可能性があるため，そこらへんを意識したデータベースの設計に直したり入力する側に制限を設ける等の対策が必要だと思える．
+\subsection{第三正規化による利点}
+これまで前項までにてデメリットについて考察をしていたが，メリットについての考察をここではする．
+第三正規化まで終わっているデータでは，従属関係が一つしかないため，データとデータのつながりが見えやすい．また，検索したものを表示するときに検索する量をSQLの内部的には減らすことが出来ると思う．その点ではデータの検索が効率的であり，第一正規化に勝るメリットである．しかしこれは保存するデータの量に変わってくるので，今回はその恩恵について感じることが出来なかったが，これが数十万,数百万のデータに対して行われると思うと検索の速度にものすごい影響が出ると思う．
+
 
 
 
