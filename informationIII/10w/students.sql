@@ -126,7 +126,7 @@ INSERT INTO
 VALUES
     (1, '都市デザイン系', 1),
     (2, '情報エレクトロニクス系', 2),
-    (3, '都市デザイン系', 3);
+    (3, '機械ロボティクス系', 3);
 
 INSERT INTO
     student (code, name, age, icourse_d, gender_id)
@@ -147,3 +147,99 @@ VALUES
     (2, '26132', 87, '2025-06-10'),
     (6, '26132', 78, '2025-06-11'),
     (7, '26132', 100, '2025-06-12');
+
+SELECT * FROM result;
+SELECT * FROM gender;
+SELECT * FROM teacher;
+SELECT * FROM place;
+SELECT * FROM subject;
+SELECT * FROM course;
+SELECT * FROM student;
+SELECT * FROM scores;
+
+SELECT
+    student.code,
+    student.name,
+    student.age,
+    gender.gender,
+    course.course,
+    place.place,
+    subject.subject,
+    scores.score,
+    result.result,
+    teacher.teacher_id,
+    teacher.name AS teacher_name,
+    scores.date
+FROM
+    scores
+    inner JOIN student ON scores.code = student.code
+    inner JOIN course ON student.icourse_d = course.id
+    inner JOIN place ON course.place_id = place.id
+    inner JOIN gender ON student.gender_id = gender.id
+    inner JOIN subject ON scores.id = subject.id
+    inner JOIN result ON scores.score between result.min and result.max
+    inner JOIN teacher ON subject.teacher_id = teacher.teacher_id
+ORDER BY student.code DESC, subject.id ASC;
+
+SELECT DISTINCT
+    student.code,
+    student.name,
+    course.course
+FROM
+    scores
+    inner JOIN student ON scores.code = student.code
+    inner JOIN course ON student.icourse_d = course.id
+    inner JOIN place ON course.place_id = place.id
+    inner JOIN gender ON student.gender_id = gender.id
+    inner JOIN subject ON scores.id = subject.id
+    inner JOIN result ON scores.score between result.min and result.max
+    inner JOIN teacher ON subject.teacher_id = teacher.teacher_id
+WHERE
+    result.result = '優';
+
+SELECT
+    student.name,
+    subject.subject,
+    teacher.name AS teacher_name
+FROM
+    scores
+    inner JOIN student ON scores.code = student.code
+    inner JOIN course ON student.icourse_d = course.id
+    inner JOIN place ON course.place_id = place.id
+    inner JOIN gender ON student.gender_id = gender.id
+    inner JOIN subject ON scores.id = subject.id
+    inner JOIN result ON scores.score between result.min and result.max
+    inner JOIN teacher ON subject.teacher_id = teacher.teacher_id
+WHERE
+    teacher.name LIKE '%高田%'
+    OR teacher.name LIKE '%三浦%';
+
+SELECT
+    student.name,
+    subject.subject,
+    scores.score
+FROM
+    scores
+    inner JOIN student ON scores.code = student.code
+    inner JOIN course ON student.icourse_d = course.id
+    inner JOIN place ON course.place_id = place.id
+    inner JOIN gender ON student.gender_id = gender.id
+    inner JOIN subject ON scores.id = subject.id
+    inner JOIN result ON scores.score between result.min and result.max
+    inner JOIN teacher ON subject.teacher_id = teacher.teacher_id
+WHERE
+    subject.subject LIKE '%学%';
+
+SELECT
+    AVG(scores.score) AS avg
+FROM
+    scores
+    inner JOIN student ON scores.code = student.code
+    inner JOIN course ON student.icourse_d = course.id
+    inner JOIN place ON course.place_id = place.id
+    inner JOIN gender ON student.gender_id = gender.id
+    inner JOIN subject ON scores.id = subject.id
+    inner JOIN result ON scores.score between result.min and result.max
+    inner JOIN teacher ON subject.teacher_id = teacher.teacher_id
+WHERE
+    teacher.name LIKE '%三浦%';

@@ -1,0 +1,243 @@
+\documentclass[a4paper,11pt]{ltjsarticle}
+% 数式
+\usepackage{amsmath,amsfonts}
+\usepackage{bm}
+% 画像
+\usepackage{graphicx}
+\usepackage{circuitikz}
+\usepackage{amsmath,amssymb}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage{tikz}
+\usepackage{askmaps}
+\usepackage{multirow}
+\usepackage{bigstrut}
+\usepackage{slashbox}
+\usepackage{rotating}
+\usepackage{listings}
+% 数式
+\usepackage{physics}
+\usepackage{mathtools}
+% 画像
+\usepackage{subcaption}
+% 表
+\usepackage{makecell}
+% その他
+\usepackage{url}
+\usepackage{ascmac}
+\usepackage{cases}
+\usepackage{here}
+\usepackage{upgreek}
+% 日本語対応
+\usepackage{luatexja}
+\usepackage{luatexja-fontspec}
+
+\AtBeginDocument{\RenewCommandCopy\qty\SI}
+
+
+\definecolor{commentgreen}{RGB}{0,200,0}
+\definecolor{eminence}{RGB}{120,80,250}
+\definecolor{weborange}{RGB}{255,165,0}
+\definecolor{frenchplum}{RGB}{10,150,200}
+\definecolor{commentgreen}{RGB}{0,200,0}
+\definecolor{eminence}{RGB}{120,80,250}
+\definecolor{weborange}{RGB}{255,165,0}
+\definecolor{frenchplum}{RGB}{10,150,200}
+
+\lstset{
+        language = {C},
+        basicstyle = \ttfamily\small,
+        keywordstyle=\color{eminence}\ttfamily\bfseries,
+        commentstyle=\color{commentgreen}\textit,
+    identifierstyle=\color{black}\ttfamily,
+        xleftmargin=.35in,
+        frame=lines,
+    showstringspaces=false,
+        numbers=left,
+        stepnumber = 1,
+        breaklines=true,
+        numberstyle = \ttfamily\normalsize,
+    tabsize=4,  
+        emph={int, int8_t, int16_t, int32_t, int64_t, uint8_t, uint16_t, uint32_t, uint64_t, char, double, float, unsigned, void, bool},
+        emphstyle={\color{blue}}, 
+        morekeywords={>, <, ., ;, +, -, *, /, !, =, ~},
+        breakindent = 10pt, 
+        framexleftmargin=10mm, 
+        columns=fixed,
+        basewidth=0.5em,
+        }
+
+% 特定のスタイル設定
+\lstdefinestyle{customtxt}{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{lightgray},
+  frame=single,
+  breaklines=true,
+  columns=fullflexible,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=4,
+}
+
+\newcommand{\fig}[4]{
+    \begin{figure}[htbp]
+      \centering
+      \includegraphics{./image/#1}
+      \caption{#2}
+      \label{fig:#3}
+    \end{figure}
+  }
+\begin{document}
+
+
+\section{要旨}
+% 結果等を入れて三行程度でミニレポートを書く
+物質を曲げようと応力を加えると，ひずみが発生する．応力$\sigma$とひずみ$\varepsilon$の関係は$\sigma = E \varepsilon$で表される．
+ここで，$E$はヤング率と呼ばれる物質固有の定数である．
+$E$はフックの法則に現れる$k$に相当する．
+本実験では，様々な金属を用いてヤング率の計測を行い，実測値との比較を行った．
+銅のヤング率が約$12.2 \times 10^{10}$,
+黄銅のヤング率が約$9.41 \times 10^{10}$,
+鋼のヤング率が約$20.6 \times 10^{10}$であった．
+\section{目的}
+% 何を測定して、どのような意味があるのかを書く
+金属棒におもりを加えていき，ひずみを測定することにより，ヤング率を求める．
+また，これらを3種類の金属棒で行い，それぞれのヤング率を求める．
+\section{実験手順}
+% 実験指導書のページを参照で良い。しかし違うものをした場合は再現できるほど細かく書く
+本実験は実験指導書pp.37-43を参考にして行う．
+\section{実験結果}
+% 表/グラフを用いて実験で得たデータを示し、目的とする物理量を求める。最低限有効数字を意識して、さらには不確かさを表示すること
+\subsection{測定データ}
+実験で得られた測定データを示す．
+金属棒は銅, 黄銅, 鋼の3種類についてそれぞれ，A, B, Cとする．
+金属棒A,B,Cそれぞれの測定時のエッジ間の距離$l$を表\ref{tab:metal_length}に示す．
+金属棒A,B,Cのそれぞれの厚さ，長さ，幅を表\ref{tab:metal_size}に示す．
+金属棒Aのおもりを加えていった時の表を表\ref{tab:youngs_modulus_A}に示す．
+金属棒Bのおもりを加えていった時の表を表\ref{tab:youngs_modulus_B}に示す．
+金属棒Cのおもりを加えていった時の表を表\ref{tab:youngs_modulus_C}に示す．
+\begin{table}[htbp]
+  \centering
+  \caption{金属棒のエッジ間の距離}
+  \label{tab:metal_length}
+  \begin{tabular}{|c|c|}
+    \hline
+    金属 & $x_m$[cm] \\ \hline
+    A  & 240.5     \\ \hline
+    B  & 237       \\ \hline
+    C  & 234       \\ \hline
+  \end{tabular}
+\end{table}
+\begin{table}[htbp]
+  \centering
+  \caption{金属棒のサイズ}
+  \label{tab:metal_size}
+  \begin{tabular}{|c|c|c|c|}
+    \hline
+    金属棒 & 幅b$[mm]$ & 厚さa$[mm]$ & 断面積$[mm^2]$ \\ \hline
+    A   & 15.870   & 4.9700    & 78.87       \\ \hline
+    B   & 15.959   & 4.9470    & 78.95       \\ \hline
+    C   & 15.872   & 4.8965    & 77.72       \\ \hline
+  \end{tabular}
+\end{table}
+\begin{table}[htbp]
+  \centering
+  \caption{金属棒Aの測定結果}
+  \label{tab:youngs_modulus_A}
+  \begin{tabular}{|c|c|c|c|}
+    \hline
+    $m$ & $y_m$[mm] & $y'_m$[mm] & $\overline{y}$[mm] \\
+    \hline
+    0   & 0.0       & -0.5       & -0.3               \\
+    \hline
+    1   & 20.5      & 20.3       & 20.4               \\
+    \hline
+    2   & 41.2      & 41.5       & 41.4               \\
+    \hline
+    3   & 62.3      & 61.7       & 62.0               \\
+    \hline
+    4   & 83.5      & 83.5       & 83.5               \\
+    \hline
+    5   & 104.5     & 104.5      & 104.5              \\
+    \hline
+  \end{tabular}
+\end{table}
+\begin{table}[htbp]
+  \centering
+  \caption{金属棒Bの測定結果}
+  \label{tab:youngs_modulus_B}
+  \begin{tabular}{|c|c|c|c|}
+    \hline
+    $m$ & $y_m$[mm] & $y'_m$[mm] & $\overline{y}$[mm] \\ \hline
+    0   & 30.1      & 34.0       & 32.1               \\ \hline
+    1   & 60.3      & 60.5       & 60.4               \\ \hline
+    2   & 82.3      & 87.5       & 84.9               \\ \hline
+    3   & 114.5     & 114.5      & 114.5              \\ \hline
+    4   & 141.0     & 141.0      & 141.0              \\ \hline
+    5   & 167.5     & 167.5      & 167.5              \\ \hline
+  \end{tabular}
+\end{table}
+\begin{table}[htbp]
+  \centering
+  \caption{金属棒Cの測定結果}
+  \label{tab:youngs_modulus_C}
+  \begin{tabular}{|c|c|c|c|}
+    \hline
+    $m$ & $y_m$[mm] & $y'_m$[mm] & $\overline{y}$[mm] \\ \hline
+    0   & 30.0      & 30.0       & 30.0               \\ \hline
+    1   & 41.5      & 42.0       & 41.8               \\ \hline
+    2   & 55.3      & 55.0       & 55.2               \\ \hline
+    3   & 67.5      & 68.5       & 68.0               \\ \hline
+    4   & 81.5      & 81.0       & 81.3               \\ \hline
+    5   & 94.0      & 94.0       & 94.0               \\ \hline
+  \end{tabular}
+\end{table}
+\newpage
+\subsection{ヤング率の計算}
+ヤング率は次の式で求めることができる．
+\begin{gather}
+  e = \frac{z \cdot \overline{y}}{2x} \\
+  E = \frac{l^3mg}{4a^3be}
+\end{gather}
+測定結果より求めた
+
+
+金属棒A,B,Cのヤング率を表\ref{tab:youngs_modulus}に示す．
+\begin{table}[htbp]
+  \centering
+  \caption{ヤング率の計算結果}
+  \label{tab:youngs_modulus}
+  \begin{tabular}{|c|c|c|c|}
+    \hline
+    金属棒 & ヤング率$E$[$\mathrm{N/m^2}$] & ヤング率$E$[$\mathrm{Pa}$] & ヤング率$E$[$\mathrm{GPa}$] \\ \hline
+    A   & 1.22$\times 10^{11}$      & 1.22$\times 10^{11}$   & 122                     \\ \hline
+    B   & 9.41$\times 10^{10}$      & 9.41$\times 10^{10}$   & 94.1                    \\ \hline
+    C   & 2.06$\times 10^{11}$      & 2.06$\times 10^{11}$   & 206                     \\ \hline
+  \end{tabular}
+\end{table}
+\section{考察}
+% 実験結果から何がいえるかという問に答えるところ。実験結果が信頼できるのかを論理的に書く。実験指導書の課題もここで答える。新しい実験方法を披露できるとなおよい。最小二乗法は考察
+理論値の値を表\ref{tab:youngs_modulus_true}に示す．実験値と理論値の誤差は少なかったが，
+誤差は生じていた．この誤差の生じる原因として，エッジ間の距離の測定誤差が考えられる．
+鏡の向きを合わせた後に測定を行ったため，目測で大体あっていることを確認しながらの計測，またメジャーを平行にすることの難しさから
+この誤差が生じていたと思われる．
+誤差が少なかった要因としては，3乗される数値の測定誤差の少なさが挙げられる．$b$,$a$の測定箇所による数値の誤差は0.1mm程度であり，どの測定箇所でもほぼ同じ値となった．これにより
+実測値と理論値の誤差が少なくなったと考えられる．
+\begin{table}[htbp]
+  \centering
+  \caption{実際のヤング率}
+  \label{tab:youngs_modulus_true}
+  \begin{tabular}{|c|c|}
+    \hline
+    金属棒 & ヤング率$E$[$\mathrm{N/m^2}$]   \\ \hline
+    銅   & $12.98\times 10^{10}$       \\ \hline
+    黄銅  & $10.06\times 10^{10}$       \\ \hline
+    鋼   & $20.1 ~ 20.6\times 10^{10}$ \\ \hline
+  \end{tabular}
+\end{table}
+
+
+
+
+\end{document}
