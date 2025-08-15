@@ -1,3 +1,4 @@
+--課題2
 CREATE DATABASE IF NOT EXISTS kadai;
 
 USE kadai;
@@ -156,7 +157,7 @@ SELECT * FROM subject;
 SELECT * FROM course;
 SELECT * FROM student;
 SELECT * FROM scores;
-
+--問1
 SELECT
     student.code,
     student.name,
