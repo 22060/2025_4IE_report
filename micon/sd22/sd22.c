@@ -174,8 +174,9 @@ void main()
             // 手順１：CMD17 を発行し、データ・トークン・スタートバイトを待つ
             // CMD17 の引数は 0
             ret = SD_send_cmd(0x51, 0); // CMD17 with argument 0
-            while (ret != 0x00)         // Wait for data token start byte
+            while (ret != 0xfe)         // Wait for data token start byte
             {
+                ret = SPI_tx_rx(0xff);
             }
 
             // 手順２：512 バイト分のデータを取得し、配列に格納
@@ -205,8 +206,9 @@ void main()
             // CMD17 を発行し、データ・トークン・スタートバイトを待つ
             // CMD17 の引数は SECT_NR * 512
             ret = SD_send_cmd(0x51, SECT_NR * 512); // CMD17 with argument SECT_NR * 512
-            while (ret != 0x00)                     // Wait for data token start byte
+            while (ret != 0xfe)                     // Wait for data token start byte
             {
+                ret = SPI_tx_rx(0xff);
             }
 
             // 512 バイト分のデータを取得し、配列に格納

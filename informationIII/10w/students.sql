@@ -181,7 +181,7 @@ FROM
     inner JOIN result ON scores.score between result.min and result.max
     inner JOIN teacher ON subject.teacher_id = teacher.teacher_id
 ORDER BY student.code DESC, subject.id ASC;
-
+--問2
 SELECT DISTINCT
     student.code,
     student.name,
@@ -197,7 +197,7 @@ FROM
     inner JOIN teacher ON subject.teacher_id = teacher.teacher_id
 WHERE
     result.result = '優';
-
+--問3
 SELECT
     student.name,
     subject.subject,
@@ -214,7 +214,7 @@ FROM
 WHERE
     teacher.name LIKE '%高田%'
     OR teacher.name LIKE '%三浦%';
-
+--問4
 SELECT
     student.name,
     subject.subject,
@@ -230,7 +230,7 @@ FROM
     inner JOIN teacher ON subject.teacher_id = teacher.teacher_id
 WHERE
     subject.subject LIKE '%学%';
-
+--問5
 SELECT
     AVG(scores.score) AS avg
 FROM
