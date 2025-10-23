@@ -279,23 +279,34 @@ void ex_BPB()
 // --------------------------------------------------
 // RDE を取得
 //
-void get_RDE()
+void get_RDE(int n)
 {
+    int i;
     // -- 演習３ --
     DISK.First_RDE_sect = DISK.First_sect_LBA + DISK.BPB_RsvdSecCnt + (DISK.BPB_NumFATs * DISK.BPB_FATSz16);
-    read_sector(DISK.First_RDE_sect, rde);
+    read_sector(DISK.First_RDE_sect + n, rde);
+    print_sector(DISK.First_RDE_sect + n, rde);
 }
 
 // --------------------------------------------------
 // RDE の n 番目のファイル情報を取得
 //
-void get_file_info(struct file_t *file)
+int get_file_info(struct file_t *file)
 {
     // -- 演習４ --
     int i;
     unsigned int offset;
 
     offset = file->n * 32;
+    if (rde[offset] == 0xe5 && rde[offset + 1] == 0x4a)
+    { // 削除ファイル
+        return (-1);
+    }
+    if (rde[offset] == 0x00)
+    { // 空きエントリ
+        file->Filename[0] = 0x00;
+        return (0);
+    }
 
     // -- ファイル名 --
     for (i = 0; i < 8; i++)
@@ -313,10 +324,11 @@ void get_file_info(struct file_t *file)
     file->File_min = ((rde[offset + 15] & 0x07) << 3) + (rde[offset + 14] >> 5);
     file->File_sec = (rde[offset + 14] & 0x1f) * 2;
     file->File_year = ((rde[offset + 17] >> 1) & 0x7f) + 1980;
-    file->File_month = (rde[offset + 17] >> 5) & 0x0f;
+    file->File_month = ((rde[offset + 16] >> 5) & 0x07) + (((rde[offset + 17]) & 0x01) * 8);
     file->File_date = rde[offset + 16] & 0x1f;
     file->FstClusLO = rde[offset + 26] | (rde[offset + 27] << 8);
     file->FileSize = rde[offset + 28] | (rde[offset + 29] << 8) | (rde[offset + 30] << 16) | (rde[offset + 31] << 24);
+    return (1);
 }
 
 // --------------------------------------------------
@@ -325,10 +337,14 @@ void get_file_info(struct file_t *file)
 //
 void get_FAT()
 {
+    int i;
     // -- 演習５ --
-    DISK.First_FAT_sect = 0;
+    DISK.First_FAT_sect = DISK.First_sect_LBA + DISK.BPB_RsvdSecCnt;
     read_sector(DISK.First_FAT_sect, fat);
     read_sector(DISK.First_FAT_sect + 1, &fat[512]);
+    for (i = 0; i < 32; i++)
+        printf("%02x ", fat[i]);
+    printf("\n");
 }
 
 // --------------------------------------------------
@@ -339,11 +355,11 @@ void ex_FAT(struct file_t *file)
     // -- 演習６ --
     unsigned int cluster;
 
-    cluster = 0; // <-- 編集
+    cluster = file->FstClusLO;
     printf("%d ", cluster);
     while (cluster != 0xffff)
     {
-        cluster = 0; // <-- 編集
+        cluster = fat[cluster * 2] | (fat[cluster * 2 + 1] << 8);
         printf(" -> %d ", cluster);
     }
     printf("\n");
@@ -359,18 +375,19 @@ void get_File(struct file_t *file)
     unsigned int sz;
     unsigned int cluster;
 
-    DISK.First_Data_sect = 0; // <-- 編集
-    cluster = 0;              // <-- 編集
+    DISK.First_Data_sect = DISK.First_sect_LBA + DISK.BPB_RsvdSecCnt + (DISK.BPB_NumFATs * DISK.BPB_FATSz16) + ((DISK.BPB_RootEntCnt * 32 + (DISK.BPB_BytesPerSec - 1)) / DISK.BPB_BytesPerSec);
+    cluster = file->FstClusLO;
+    // printf("First_Data_sect=0x%x\n", (DISK.First_Data_sect + (cluster - 2) * DISK.BPB_SecPerClus));
     sz = 0;
     while (cluster != 0xffff)
     {
         for (i = 0; i < DISK.BPB_SecPerClus; i++)
         {
-            read_sector(0, dt); // <-- 編集
-            for (j = 0; j < 0; j++)
-            {                         // <-- 編集
-                                      //				printf("%c ", dt[j]);
-                file->Data[sz++] = 0; // <-- 編集
+            read_sector(DISK.First_Data_sect + (cluster - 2) * DISK.BPB_SecPerClus + i, dt);
+            for (j = 0; j < 512; j++)
+            {
+                printf("%c ", dt[j]);
+                file->Data[sz++] = dt[j];
                 if (sz >= file->FileSize)
                 {
                     break;
@@ -381,7 +398,7 @@ void get_File(struct file_t *file)
         }
         if (sz >= file->FileSize)
             break;
-        cluster = 0; // <-- 編集
+        cluster = fat[cluster * 2] | (fat[cluster * 2 + 1] << 8);
     }
 }
 
@@ -402,19 +419,65 @@ void print_File(struct file_t *file)
 //
 void dump_SECT()
 {
-    unsigned int SECT_NR;
+    unsigned int s;
+    unsigned int n;
+    int i = 0;
+    for (i = 0; i < 4096; i++)
+        File0.Data[i] = 0;
 
-    printf("\nSector number = 0x");
-    scanf("%x", &SECT_NR);
-    read_sector(SECT_NR, dt);
-    print_sector(SECT_NR, dt);
+    printf("\nfile shower(s,n) = ");
+    scanf("%d", &s);
+    scanf("%d", &n);
+    printf("s=%d n=%d\n", s, n);
+    get_RDE(s);
+    File0.n = n; // RDE 3 番目のファイル情報
+    File0.Data = FileData0;
+    get_file_info(&File0);
+    get_File(&File0);
+    print_File(&File0);
 }
-
+// --------------------------------------------------
+// show file information
+void show_file_info(struct file_t *file)
+{
+    int i = 0;
+    int status;
+    printf("------------------------------------------------\n");
+    while (status = get_file_info(file))
+    {
+        printf("s=%X ", DISK.First_RDE_sect + i);
+        printf("n=%d ", file->n);
+        if (status == -1)
+        {
+            printf("削除ファイル");
+            file->n++;
+        }
+        else
+        {
+            for (int i = 0; i < 12; i++)
+                printf("%c", file->Filename[i]);
+            printf(" / ");
+            // printf("属性 = 0x%x\n", file->attr);
+            printf("Time = %02d:%02d:%02d / ", file->File_hour, file->File_min, file->File_sec);
+            printf("Date = %4d/%02d/%02d", file->File_year, file->File_month, file->File_date);
+            // printf("FileSize = %d\n", file->FileSize);
+            // printf("FstClusLO = %d\n", file->FstClusLO);
+            file->n++;
+        }
+        if (file->n > (DISK.BPB_RootEntCnt / 32) - 1)
+        {
+            get_RDE(++i);
+            file->n = 0;
+        }
+        printf("\n");
+    }
+}
 // --------------------------------------------------
 // --------------------------------------------------
 void main()
 {
     int i;
+    int j;
 
     init_CMT0();
     init_SCI2();
@@ -454,7 +517,7 @@ void main()
 
             // --------------------------------------------------
             // RDE を取得 -> グローバル変数 rde[] に格納
-            get_RDE();
+            get_RDE(0);
             printf("First RDE sect = 0x%x\n", DISK.First_RDE_sect);
 
             // --------------------------------------------------
@@ -468,7 +531,7 @@ void main()
             printf("属性 = 0x%x\n", File0.attr);
             printf("Time = %02d:%02d:%02d\n", File0.File_hour, File0.File_min, File0.File_sec);
             printf("Date = %4d/%02d/%02d\n", File0.File_year, File0.File_month, File0.File_date);
-            printf("FileSize = %d\n\n", File0.FileSize);
+            printf("FileSize = %d\n", File0.FileSize);
             printf("FstClusLO = %d\n", File0.FstClusLO);
 
             // --------------------------------------------------
@@ -477,12 +540,17 @@ void main()
 
             // --------------------------------------------------
             // File に対応するファイル本体を取得 -> File.data[] に格納
-            // get_File(&File0);
+            get_File(&File0);
 
             // --------------------------------------------------
             // ファイル内容を表示
-            // printf("FileSize = %d\n", File0.FileSize);
-            // print_File(&File0);
+            printf("FileSize = %d\n", File0.FileSize);
+            print_File(&File0);
+
+            // --------------------------------------------------
+            // ルートディレクトリのファイル情報をすべて表示
+            File0.n = 3;
+            show_file_info(&File0);
 
             // --------------------------------------------------
             while (1)
