@@ -285,7 +285,7 @@ void get_RDE(int n)
     // -- 演習３ --
     DISK.First_RDE_sect = DISK.First_sect_LBA + DISK.BPB_RsvdSecCnt + (DISK.BPB_NumFATs * DISK.BPB_FATSz16);
     read_sector(DISK.First_RDE_sect + n, rde);
-    print_sector(DISK.First_RDE_sect + n, rde);
+    // print_sector(DISK.First_RDE_sect + n, rde);
 }
 
 // --------------------------------------------------
@@ -386,7 +386,7 @@ void get_File(struct file_t *file)
             read_sector(DISK.First_Data_sect + (cluster - 2) * DISK.BPB_SecPerClus + i, dt);
             for (j = 0; j < 512; j++)
             {
-                printf("%c ", dt[j]);
+                // printf("%c ", dt[j]);
                 file->Data[sz++] = dt[j];
                 if (sz >= file->FileSize)
                 {
@@ -399,6 +399,7 @@ void get_File(struct file_t *file)
         if (sz >= file->FileSize)
             break;
         cluster = fat[cluster * 2] | (fat[cluster * 2 + 1] << 8);
+        // printf("Next cluster=%d\n", cluster);
     }
 }
 
@@ -428,13 +429,26 @@ void dump_SECT()
     printf("\nfile shower(s,n) = ");
     scanf("%d", &s);
     scanf("%d", &n);
-    printf("s=%d n=%d\n", s, n);
     get_RDE(s);
     File0.n = n; // RDE 3 番目のファイル情報
     File0.Data = FileData0;
-    get_file_info(&File0);
-    get_File(&File0);
-    print_File(&File0);
+    if (get_file_info(&File0) == 1)
+    {
+        for (i = 0; i < 12; i++)
+            printf("%c", File0.Filename[i]);
+        printf(" -> ");
+
+        get_File(&File0);
+        print_File(&File0);
+    }
+    else if (get_file_info(&File0) == -1)
+    {
+        printf("Deleted file\n");
+    }
+    else
+    {
+        printf("No file\n");
+    }
 }
 // --------------------------------------------------
 // show file information
@@ -445,7 +459,7 @@ void show_file_info(struct file_t *file)
     printf("------------------------------------------------\n");
     while (status = get_file_info(file))
     {
-        printf("s=%X ", DISK.First_RDE_sect + i);
+        printf("s=%X ", i);
         printf("n=%d ", file->n);
         if (status == -1)
         {
@@ -470,6 +484,7 @@ void show_file_info(struct file_t *file)
             file->n = 0;
         }
         printf("\n");
+        ex_FAT(file);
     }
 }
 // --------------------------------------------------
@@ -536,7 +551,7 @@ void main()
 
             // --------------------------------------------------
             // File に対応する FAT を解析し、クラスタチェーンを表示
-            // ex_FAT(&File0);
+            ex_FAT(&File0);
 
             // --------------------------------------------------
             // File に対応するファイル本体を取得 -> File.data[] に格納
