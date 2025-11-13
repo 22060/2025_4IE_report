@@ -1,0 +1,168 @@
+\documentclass[a4paper,11pt]{ltjsarticle}
+% 数式
+\usepackage{amsmath,amsfonts}
+\usepackage{bm}
+% 画像
+\usepackage{graphicx}
+\usepackage{circuitikz}
+\usepackage{amsmath,amssymb}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage{tikz}
+\usepackage{askmaps}
+\usepackage{multirow}
+\usepackage{bigstrut}
+\usepackage{slashbox}
+\usepackage{rotating}
+\usepackage{listings}
+% 数式
+\usepackage{physics}
+\usepackage{mathtools}
+% 画像
+\usepackage{subcaption}
+% 表
+\usepackage{makecell}
+% その他
+\usepackage{url}
+\usepackage{ascmac}
+\usepackage{cases}
+\usepackage{here}
+\usepackage{upgreek}
+% 日本語対応
+\usepackage{luatexja}
+\usepackage{luatexja-fontspec}
+
+\AtBeginDocument{\RenewCommandCopy\qty\SI}
+
+
+\definecolor{commentgreen}{RGB}{0,200,0}
+\definecolor{eminence}{RGB}{120,80,250}
+\definecolor{weborange}{RGB}{255,165,0}
+\definecolor{frenchplum}{RGB}{10,150,200}
+\definecolor{commentgreen}{RGB}{0,200,0}
+\definecolor{eminence}{RGB}{120,80,250}
+\definecolor{weborange}{RGB}{255,165,0}
+\definecolor{frenchplum}{RGB}{10,150,200}
+
+\lstset{
+        language = {C},
+        basicstyle = \ttfamily\small,
+        keywordstyle=\color{eminence}\ttfamily\bfseries,
+        commentstyle=\color{commentgreen}\textit,
+    identifierstyle=\color{black}\ttfamily,
+        xleftmargin=.35in,
+        frame=lines,
+    showstringspaces=false,
+        numbers=left,
+        stepnumber = 1,
+        breaklines=true,
+        numberstyle = \ttfamily\normalsize,
+    tabsize=4,  
+        emph={int, int8_t, int16_t, int32_t, int64_t, uint8_t, uint16_t, uint32_t, uint64_t, char, double, float, unsigned, void, bool},
+        emphstyle={\color{blue}}, 
+        morekeywords={>, <, ., ;, +, -, *, /, !, =, ~},
+        breakindent = 10pt, 
+        framexleftmargin=10mm, 
+        columns=fixed,
+        basewidth=0.5em,
+        }
+
+% 特定のスタイル設定
+\lstdefinestyle{customtxt}{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{lightgray},
+  frame=single,
+  breaklines=true,
+  columns=fullflexible,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=4,
+}
+
+\newcommand{\fig}[4]{
+    \begin{figure}[htbp]
+      \centering
+      \includegraphics{./image/#1}
+      \caption{#2}
+      \label{fig:#3}
+    \end{figure}
+  }
+\begin{document}
+\section{DAY4}
+\subsection{STPとは}
+市場をセグメンテーション分け→ターゲティング→ポジショニング
+\subsubsection{セグメンテーション}
+②二軸で細分化する\\
+\subsubsection{ターゲティング}
+③例→吉野家は20-60歳の男性をターゲットにしている(差別型)\\
+すき家はファミリー層(無差別型)
+④ターゲットのニーズを探る
+吉野家→速く食べたい
+すき家→家族で団欒
+\subsubsection{ポジショニング}
+⑤タポジショニングマップを作る
+⑥競合よりも優位なポジションを確立する→差別化
+⑦製品/serviceのコンセプトを明確にする→吉野家は安い速いうまい，すき家は楽しい食事
+\section{DAY5}
+\subsection{マーケティングミックス4P}
+製品(Product)，価格(Price)，流通(Place)，プロモーション(Promotion)
+\subsubsection{Price}
+知覚価値
+相場
+損益分岐点
+変動費→売上に応じて変化する費用\\
+固定費→売上に関係なく一定の費用\\
+損益分岐点販売価格=$\frac{固定費}{販売数量}+\text{変動費}$\\
+例としてアパガードで考える\\
+設問1:価格を決定するうえで，考慮すべき条件は何でしょうか？\\
+解答:効果を認識させるための市場作り//ターゲットはインフルエンサーやタレントなどの狭い層//赤字にならず，新規の市場を開拓する//ターゲットはこれまでの市場にはなかった，新しい顧客層．
+そのため，アメリカの価格と情勢を考慮して成功したデータを参考にするべきではないのか?\\
+設問2:いくらで売るか？\\
+20gは手ごろな量であり，広めるには最適であるし，高くても買ってくれるだろうということで，
+20gを900円くらいで売り，40gは1200~1300円くらい．60gは1500~1600円くらいで売ることにより，
+意識高い層はgあたりが安いほうを買い，20gを興味を，持った人に買ってもらう．
+\subsubsection{Place}
+流通とは，生産から消費に至る商品の流れと，それにかかわる一連の諸活動のこと\\
+商品の流れとは，販売(流通)チャネルのこと\\
+つまり，商品が生産者から消費者にわたるまでの道筋のこと．\\
+→一般的にサプライチェーンと呼ばれる．\\
+一連の諸活動とは，生産者と消費者の間の三つの隔たりを解消\\
+①時間の隔たり・・・清算の時点と消費の時点がずれている\\
+②場所の隔たり・・・生産地と消費地の場所がずれている\\
+③人の隔たり・・・清算する人と消費する人がずれている\\
+→①②の解消を物流と呼び，③の解消を商流と呼ぶ．\\
+\\
+①直接流通\\
+生産者が消費者に直接商品を販売すること\\
+②間接流通\\
+生産者が卸売業者，小売業者などの流通業者を介して商品を販売すること\\
+n段階については，n次流通と呼ぶ．\\
+\begin{itemize}
+  \item 0:生産者，消費者→自動販売機
+  \item 1:生産者，小売業者，消費者→コストコ
+  \item 2:生産者，卸売業者，小売業者，消費者→コンビニ
+  \item 3:生産者，卸売業者，二次卸，小売業者，消費者→駄菓子屋
+\end{itemize}
+問:豊田は何段階?\\
+解:2段階\\
+顧客の声を聴くことが大切であり，間に業者が少ないほど伝達が速い．
+また，高額商品なので，市場や相談など時間をかけて，かつ情報を多く伝えるための第一段階．
+地場の有力会社に販売会社を任せることにより，地域に密着．
+中抜きを減らす．\\
+\\
+\\
+演習問題
+2000年当時の販売網
+生産者→卸売業者→小売業者→消費者\\
+MT店とは，
+量販店のことであり，TT店とは，小さな販売会社である．
+当時のMT店では，次々新機能が搭載されるPCが市場に出てくるため，技術のスピードが速く，店頭に投入されるペースが速い．\\\\
+ここで問題があり，需要予測が難しい，また，新機能をみんな買うため赤字になる可能性がある．また，消費者の声を聞くことが出来ない．\\
+設問1:課題をメーカ/小売店/顧客それぞれの視点から整理をしなさい．特にチャネルに関連つけて\\
+回答:メーカー視点では，どのような需要が市場にあるのかを吸い取りづらい．小売店からすれば，需要予測が立たないため，
+仕入れる量を予測しづらい．顧客からすれば，次々出る新機能があるため，どのタイミングで買えばいいのかがわかりづらい．\\
+設問2:どのようなチャネルを構築すればよいか?\\
+回答:機能ごとにブランドを作成することにより，顧客が自分のニーズに合ったブランドを選びやすくする．
+設問3:新しいチャネルはどのようなメリットがあるか?\\
+\end{document}

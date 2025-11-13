@@ -65,7 +65,7 @@ void TFT_draw_pic()
     _SINT i;
 
     TFTCTRL = 0x4001;
-    for (i = 0; i < (240); i++)
+    for (i = 0; i < (120); i++)
     {
         for (int j = 0; j < (320); j++)
         {
@@ -112,7 +112,7 @@ void TFT_draw_line(_UWORD x, _UWORD y, _UWORD w, _UWORD p_color)
 void main(void)
 {
     _UWORD w = 320;
-    _UWORD h = 120;
+    _UWORD h = 240;
     _SINT i;
     init_CS2();
     TFT_On();
@@ -123,22 +123,14 @@ void main(void)
 
     while (1)
     {
-        // TFTCTRL = 0x4001;
-
-        // for (int i = 0; i < w; i++)
-        // {
-        //     for (int j = 0; j < h; j++)
-        //     {
-        //         TFTDATA = _COL_WHITE;
-        //     }
-        // }
-        // TFTCTRL = 0x4001;
-        // for (int i = 0; i < w; i++)
-        // {
-        //     for (int j = 0; j < h; j++)
-        //     {
-        //         TFTDATA = 0x0000; // Clear the screen with black color
-        //     }
-        // }
+        TFT_draw_pic();
+        TFTCTRL = 0x4001;
+        for (int i = 0; i < w; i++)
+        {
+            for (int j = 0; j < h; j++)
+            {
+                TFTDATA = 0x0000; // Clear the screen with black color
+            }
+        }
     }
 }

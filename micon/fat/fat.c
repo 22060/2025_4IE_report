@@ -7,6 +7,10 @@
 #define SD_CD (PE.DR.BIT.B11)
 #define SD_CS (PE.DR.BIT.B9)
 
+#define TFTDATA (*(volatile unsigned short *)0x08000000)
+#define TFTCTRL (*(volatile unsigned short *)0x08000002)
+#define _COL_WHITE (0xFFFF)
+#define _COL_RED (0xF800)
 // --------------------------------------------------
 struct disk_t
 {
@@ -415,6 +419,49 @@ void print_File(struct file_t *file)
     printf("\n");
 }
 
+void TFT_clear(void)
+{
+    int i;
+    TFTCTRL = 0x4001;
+    for (i = 0; i < (320 * 240); i++)
+    {
+        TFTDATA = _COL_WHITE;
+    }
+}
+void TFT_On(void)
+{
+    TFTCTRL = 0x4000;
+}
+void init_CS2(void)
+{
+    BSC.CS2BCR.LONG = 0x12490400;
+    BSC.CS2WCR = 0x000302C0;
+    PFC.PACRL4.BIT.PA15MD = 1;
+    PFC.PACRL2.BIT.PA6MD = 2;
+}
+void TFT_draw_pic(struct file_t *file)
+{
+    int i;
+    int w = (file->Data[0] << 8) + file->Data[1];
+    int h = file->Data[2];
+    printf("W=%d H=%d\n", w, h);
+
+    TFTCTRL = 0x4001;
+    for (i = 0; i < (240); i++)
+    {
+        for (int j = 0; j < (320); j++)
+        {
+            if (i > h - 1 || j > w - 1)
+            {
+                TFTDATA = _COL_WHITE;
+            }
+            else
+            {
+                TFTDATA = (file->Data[(i * w + j) * 2 + 3] << 8) | (file->Data[(i * w + j) * 2 + 4]);
+            }
+        }
+    }
+}
 // --------------------------------------------------
 // セクタダンプ
 //
@@ -439,7 +486,12 @@ void dump_SECT()
         printf(" -> ");
 
         get_File(&File0);
-        print_File(&File0);
+        if (File0.Filename[8] == '.' && File0.Filename[9] == 'I' && File0.Filename[10] == 'M' && File0.Filename[11] == 'G')
+        {
+            TFT_draw_pic(&File0);
+        }
+        else
+            print_File(&File0);
     }
     else if (get_file_info(&File0) == -1)
     {
@@ -478,13 +530,19 @@ void show_file_info(struct file_t *file)
             // printf("FstClusLO = %d\n", file->FstClusLO);
             file->n++;
         }
+
+        if (file->n == 9 && i == 1)
+        {
+            file->n++;
+        }
         if (file->n > (DISK.BPB_RootEntCnt / 32) - 1)
         {
-            get_RDE(++i);
+            i++;
+            get_RDE(i);
             file->n = 0;
         }
         printf("\n");
-        ex_FAT(file);
+        // ex_FAT(file);
     }
 }
 // --------------------------------------------------
@@ -496,6 +554,9 @@ void main()
 
     init_CMT0();
     init_SCI2();
+    init_CS2();
+    TFT_On();
+    TFT_clear();
 
     if (0)
         printf("No card found\n");

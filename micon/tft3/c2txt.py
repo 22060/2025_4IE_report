@@ -26,22 +26,17 @@ def convert_jpg_to_rgb565_2d_header(jpg_path, header_path, max_size=128):
     pixel_rows = [pixels[y * new_width : (y + 1) * new_width] for y in range(new_height)]
 
     # ヘッダファイルとして出力
-    with open(header_path, 'w') as f:
-        f.write('#ifndef RGB565_IMAGE_H\n')
-        f.write('#define RGB565_IMAGE_H\n\n')
-        f.write(f'#define IMG_WIDTH {new_width}\n')
-        f.write(f'#define IMG_HEIGHT {new_height}\n\n')
-        f.write(f'const _UWORD image_data[IMG_HEIGHT][IMG_WIDTH] = {{\n')
+    with open(header_path, 'wb') as f:
+        f.write(bytes([(new_width >> 8) & 0xFF, new_width & 0xFF, new_height & 0xFF]))
 
         for row in pixel_rows:
-            f.write('    { ')
-            f.write(', '.join(f'0x{rgb888_to_rgb565(r, g, b):04X}' for r, g, b in row))
-            f.write(' },\n')
-
-        f.write('};\n\n')
-        f.write('#endif // RGB565_IMAGE_H\n')
+            for r, g, b in row:
+                value = rgb888_to_rgb565(r, g, b)
+                high = (value >> 8) & 0xFF
+                low = value & 0xFF
+                f.write(bytes([high, low]))
 
     print(f"[完了] ヘッダファイル '{header_path}' を生成しました（{new_width}x{new_height}）")
 
 # 使用例
-convert_jpg_to_rgb565_2d_header("input1.jpg", "rgb565.h",max_size=320)
+convert_jpg_to_rgb565_2d_header("input.jpg", "rgb565.img",max_size=240)
