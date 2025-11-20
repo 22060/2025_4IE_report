@@ -1,16 +1,53 @@
 #include <7080S.H>
 #include "libmemes.h"
 
+typedef unsigned short uint16_t;
+typedef unsigned long  uint32_t;
+
+#define DMAC0_SAR   (*(volatile uint32_t*)0xFFA00000)  // Source Address
+#define DMAC0_DAR   (*(volatile uint32_t*)0xFFA00004)  // Destination Address
+#define DMAC0_TCR   (*(volatile uint32_t*)0xFFA00008)  // Transfer Count
+#define DMAC0_CHCR  (*(volatile uint32_t*)0xFFA0000C)  // Channel Control
+
+#define DMA_ENABLE  (*(volatile uint32_t*)0xFFA00040)  // DMAOR
+
+#define TFTDATA (*(volatile unsigned short *)0x08000000)
+#define TFTCTRL (*(volatile unsigned short *)0x08000002)
+#define _COL_WHITE (0xFFFF)
+
+uint16_t framebuf[240 * 320];   // RGB565 frame buffer
+
+// --------------------------------------------------
+void tft_dma_send(void)
+{
+    DMA_ENABLE = 0x0007;   // DME=1, NMIF=1, AAE=1
+
+    DMAC0_SAR = (uint32_t)framebuf;
+    DMAC0_DAR = (uint32_t)&TFTDATA;
+
+    DMAC0_TCR = 240 * 320; // 76800
+
+    DMAC0_CHCR =
+        (1 << 0) |     // DE
+        (1 << 2) |     // DTS（auto）
+        (1 << 12) |    // SS=01 (16bit)
+        (1 << 8);      // DS=01 (16bit)
+
+    // Start
+    DMAC0_CHCR |= (1 << 1);
+
+    // Wait
+    while (DMAC0_CHCR & (1 << 1))
+        ;
+}
 #define printf ((int (*)(const char *, ...))0x00007c7c)
 #define scanf ((int (*)(const char *, ...))0x00007cb8)
 
 #define SD_CD (PE.DR.BIT.B11)
 #define SD_CS (PE.DR.BIT.B9)
 
-#define TFTDATA (*(volatile unsigned short *)0x08000000)
-#define TFTCTRL (*(volatile unsigned short *)0x08000002)
-#define _COL_WHITE (0xFFFF)
-#define _COL_RED (0xF800)
+
+
 // --------------------------------------------------
 struct disk_t
 {
@@ -45,7 +82,7 @@ struct file_t
 // --------------------------------------------------
 // -- グローバル変数 --
 unsigned char dt[512];   // セクタリード用ワーク
-unsigned char fat[1024]; // FAT
+unsigned char fat[2048]; // FAT
 unsigned char rde[512];  // RDE
 
 struct file_t File0;           // ファイル
@@ -346,6 +383,8 @@ void get_FAT()
     DISK.First_FAT_sect = DISK.First_sect_LBA + DISK.BPB_RsvdSecCnt;
     read_sector(DISK.First_FAT_sect, fat);
     read_sector(DISK.First_FAT_sect + 1, &fat[512]);
+    read_sector(DISK.First_FAT_sect + 2, &fat[1024]);
+    read_sector(DISK.First_FAT_sect + 3, &fat[1536]);
     for (i = 0; i < 32; i++)
         printf("%02x ", fat[i]);
     printf("\n");

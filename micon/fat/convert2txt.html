@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <title>JPG → RGB565 converter</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+        }
+
+        #canvas {
+            border: 1px solid #333;
+        }
+
+        textarea {
+            width: 480px;
+            height: 200px;
+        }
+
+        button {
+            padding: 6px 12px;
+            margin-right: 8px;
+        }
+
+        input[type="number"] {
+            width: 80px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>画像 → RGB565 変換（Python版と同じ処理）</h2>
+
+    <input type="file" id="imgInput" accept="image/*,.bmp,.png,.jpg,.jpeg,.gif,.webp">
+    <br><br>
+    最大サイズ: <input type="number" id="maxSizeBox" value="240" min="1"> px
+    <button id="downloadBtn" disabled>rgb565.img をダウンロード</button>
+
+    <h3>画像プレビュー</h3>
+    <canvas id="canvas"></canvas>
+
+    <h3>生成された RGB565 HEX 表示</h3>
+    <textarea id="hexBox" readonly></textarea>
+
+    <script>
+        function rgb888_to_rgb565(r, g, b) {
+            return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
+        }
+
+        document.getElementById("imgInput").addEventListener("change", function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const maxSize = parseInt(document.getElementById("maxSizeBox").value) || 240;
+
+            const img = new Image();
+            img.onload = function () {
+                let scale = Math.min(maxSize / img.width, maxSize / img.height);
+                let newW = Math.floor(img.width * scale);
+                let newH = Math.floor(img.height * scale);
+
+                const canvas = document.getElementById("canvas");
+                canvas.width = newW;
+                canvas.height = newH;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, newW, newH);
+
+                const imgData = ctx.getImageData(0, 0, newW, newH);
+                const data = imgData.data;
+
+                const total = 3 + (newW * newH * 2);
+                const buffer = new Uint8Array(total);
+
+                buffer[0] = (newW >> 8) & 0xFF;
+                buffer[1] = newW & 0xFF;
+                buffer[2] = newH & 0xFF;
+
+                let pos = 3;
+                let hexOut = "";
+
+                for (let i = 0; i < newW * newH; i++) {
+                    const r = data[i * 4 + 0];
+                    const g = data[i * 4 + 1];
+                    const b = data[i * 4 + 2];
+
+                    const v = rgb888_to_rgb565(r, g, b);
+                    buffer[pos++] = (v >> 8) & 0xFF;
+                    buffer[pos++] = v & 0xFF;
+
+                    hexOut += "0x" + v.toString(16).padStart(4, "0").toUpperCase() + ((i % newW === newW - 1) ? "\n" : " ");
+                }
+
+                document.getElementById("hexBox").value = hexOut;
+
+                const blob = new Blob([buffer], { type: "application/octet-stream" });
+                const url = URL.createObjectURL(blob);
+                const dl = document.getElementById("downloadBtn");
+                dl.disabled = false;
+
+                dl.onclick = function () {
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "rgb565.img";
+                    a.click();
+                };
+            };
+
+            img.src = URL.createObjectURL(file);
+        });
+    </script>
+
+</body>
+
+</html>
