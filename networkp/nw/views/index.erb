@@ -1,0 +1,16 @@
+<h1>File Uploader</h1>
+<h2>Welcome, <%= @u %>!</h2>
+<p><%= @error%></p>
+<% @images.each do |b| %>
+<a href="/files/<%= b.images_path %>"><%= b.images_path + b.images_info %></a><br>
+<% end %>
+<%= @t%>
+<p>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file"/>
+        <input type="submit" value="Upload"/>
+    </form>
+</p>
+<p>
+    <a href="/logout">Logout</a>
+</p>
