@@ -33,7 +33,7 @@ OBJ_CFLAGS = $(CFLAGS) -O0
 TGT = fat
 
 STDOBJS = ../lib/vectors.o ../lib/startup.o
-OBJS = $(TGT).o $(STDOBJS)
+OBJS = $(STDOBJS) $(TGT).o
 
 $(TGT) : $(OBJS)
 	@mkdir -p ./bin
@@ -44,4 +44,4 @@ $(TGT) : $(OBJS)
 	@rm -f $(TGT).o
 
 clean:
-	rm -f $(TGT).o  ./bin/$(TGT).mot ./bin/$(TGT).sym ./bin/debug.out
+	rm -f $(TGT).o dma_working.o ./bin/$(TGT).mot ./bin/$(TGT).sym ./bin/debug.out

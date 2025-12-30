@@ -11,6 +11,8 @@ int isprint(int);
 void set_imask(int);
 int get_imask(void);
 void null_int(void);
-void INT_CMT1_CMI0(void);
+
+/* 音響関数宣言 */
+void audio_sample_isr(void);
 
 #endif

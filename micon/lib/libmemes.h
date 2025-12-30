@@ -14,6 +14,7 @@ int isprint(int);
 void set_imask(int);
 int get_imask(void);
 void null_int(void);
+void INT_CMT1_CMI0(void);
 
 #endif
 
