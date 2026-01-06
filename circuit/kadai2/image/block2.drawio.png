@@ -1,0 +1,136 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Block Diagram">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Inputs -->
+        <mxCell id="iClk" value="iClk (27MHz)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="20" y="40" width="120" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="iPoint" value="iPoint" style="rounded=1;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="20" y="100" width="120" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="iM" value="iM" style="rounded=1;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="20" y="160" width="120" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="iStop" value="iStop" style="rounded=1;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="20" y="220" width="120" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="iRst" value="iRst" style="rounded=1;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="20" y="280" width="120" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Clock divider -->
+        <mxCell id="d4dl" value="d4dl&#10;27MHz → 1kHz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;" vertex="1" parent="1">
+          <mxGeometry x="200" y="40" width="160" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Switch counters -->
+        <mxCell id="Count4sw1" value="Count4sw&#10;(wsw)" style="rounded=1;fillColor=#d5e8d4;" vertex="1" parent="1">
+          <mxGeometry x="420" y="40" width="140" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="Count4sw2" value="Count4sw&#10;(wsp)" style="rounded=1;fillColor=#d5e8d4;" vertex="1" parent="1">
+          <mxGeometry x="420" y="120" width="140" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Counters -->
+        <mxCell id="Counter" value="Counter&#10;UP" style="rounded=1;fillColor=#f8cecc;" vertex="1" parent="1">
+          <mxGeometry x="620" y="40" width="160" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="DeCounter" value="DeCounter&#10;DOWN" style="rounded=1;fillColor=#f8cecc;" vertex="1" parent="1">
+          <mxGeometry x="620" y="140" width="160" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- MUX -->
+        <mxCell id="MUX" value="Mode Select&#10;iM" style="rounded=1;fillColor=#e1d5e7;" vertex="1" parent="1">
+          <mxGeometry x="820" y="90" width="160" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- Digit Select -->
+        <mxCell id="Sel" value="Sel&#10;(Digit Select)" style="rounded=1;fillColor=#d5e8d4;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="90" width="160" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- Decoder -->
+        <mxCell id="SegDecoder" value="SegDecoder" style="rounded=1;fillColor=#fff2cc;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="90" width="160" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="Decoder" value="Decoder&#10;(Digit Enable)" style="rounded=1;fillColor=#fff2cc;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="200" width="160" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Outputs -->
+        <mxCell id="oD" value="oD[7:0]" style="rounded=1;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="1420" y="90" width="120" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="oDx" value="oD1~oD4" style="rounded=1;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="200" width="120" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Connections -->
+        <mxCell id="e1" edge="1" parent="1" source="iClk" target="d4dl">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e2" edge="1" parent="1" source="d4dl" target="Count4sw1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e3" edge="1" parent="1" source="iPoint" target="Count4sw2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e4" edge="1" parent="1" source="Count4sw1" target="Sel">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e5" edge="1" parent="1" source="Count4sw1" target="Decoder">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e6" edge="1" parent="1" source="Count4sw2" target="Counter">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e7" edge="1" parent="1" source="Count4sw2" target="DeCounter">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e8" edge="1" parent="1" source="Counter" target="MUX">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e9" edge="1" parent="1" source="DeCounter" target="MUX">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e10" edge="1" parent="1" source="MUX" target="Sel">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e11" edge="1" parent="1" source="Sel" target="SegDecoder">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e12" edge="1" parent="1" source="SegDecoder" target="oD">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e13" edge="1" parent="1" source="Decoder" target="oDx">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

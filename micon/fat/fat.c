@@ -163,6 +163,22 @@ int process_midi_track(uint8_t *track_data, int track_length, struct TONE *tone_
 void get_File_as_bytes(struct file_t *file);
 void play_tone_sequence(struct TONE *tone_array, int count);
 void convert_tone_to_timer_data(struct TONE *tone_array, int count, struct TIMER_DATA *timer_data);
+
+// フィールド選択関数
+int select_field();
+
+// フィールド専用のファイルロード関数
+void load_field_assets(int field_id);
+
+// フィールド情報に基づいてゲームパラメータを調整する関数
+void apply_field_modifiers();
+
+//DMAC
+void DMA0(void *SAR, void *DAR, uint8_t DM, uint8_t SM, int count);
+void DMA1(void *SAR, void *DAR, uint8_t DM, uint8_t SM, int count);
+void DMA2(void *SAR, void *DAR, uint8_t DM, uint8_t SM, int count);
+void DMA3(void *SAR, void *DAR, uint8_t DM, uint8_t SM, int count);
+
 // --------------------------------------------------
 // -- グローバル変数 --
 unsigned char dt[512];   // セクタリード用ワーク
@@ -184,7 +200,7 @@ struct TONE title_music[MAX_MIDI_EVENTS];
 struct TIMER_DATA title_music_data[MAX_MIDI_EVENTS];  // 事前計算済みタイマーデータ
 uint16_t titlemusicData[2048];  // MIDIファイル用（4KBまで対応）
 uint16_t FileData0[1024*4]; // ファイルデータ本体
-uint16_t FileData1[320*120 + 4]; // ファイルデータ本体
+// uint16_t FileData1[320*180 + 4]; // ファイルデータ本体
 uint16_t FileData3[320*240 + 4]; // ファイルデータ本体
 uint16_t FileData2[64*64 + 4]; // ボス画像データ本体（64x64想定）
 uint8_t DMAC0f = 0;
@@ -282,6 +298,31 @@ struct beam_t {
     uint16_t color;
     int damage_per_frame;
 } ult_beam;
+
+// フィールド関連の定数とデータ構造
+#define MAX_FIELDS 3
+#define FIELD_FOREST 0
+#define FIELD_DESERT 1
+#define FIELD_SPACE 2
+
+// フィールド情報構造体
+struct FieldInfo {
+    char name[16];
+    char bg_file[16];    // 背景ファイル名
+    int enemy_speed;     // 敵の移動速度倍率（%）
+    int enemy_spawn_rate; // 敵の出現率倍率（%）
+    int boss_hp_multiplier; // ボスHP倍率（%）
+};
+
+// フィールド情報テーブル
+struct FieldInfo field_data[MAX_FIELDS] = {
+    {"Forest Field", "FOREST  .IMG", 80, 100, 100},   // 森フィールド：敵が少し遅い
+    {"Desert Field", "DESERT  .IMG", 100, 120, 120},  // 砂漠フィールド：標準
+    {"Space Field",  "SPACE   .IMG", 120, 150, 150}   // 宇宙フィールド：敵が速く多い
+};
+
+// 現在のフィールド
+int current_field = FIELD_FOREST;
 
 // --------------------------------------------------
 // --------------------------------------------------
@@ -1326,17 +1367,6 @@ int load_files_by_name() {
     }
     TFT_send_draw(framebuf, 320 * 240);
 
-    // BUTTLE.IMGを読み込み
-    buttle.Data = FileData1;
-    if (find_and_load_file(&buttle, "BUTTLE  .IMG")) {
-        printf("BUTTLE.IMG loaded\n");
-        TFT_draw_string(0, 16, "BUTTLE.IMG loaded", _COL_BLACK);
-        success_count++;
-    } else {
-        printf("BUTTLE.IMG not found\n");
-        TFT_draw_string(0, 16, "BUTTLE.IMG not found", _COL_BLACK);
-    }
-    TFT_send_draw(framebuf, 320 * 240);
     
     // BOSS.IMGを読み込み
     boss_img.Data = FileData2;
@@ -1487,7 +1517,12 @@ void spawn_obstacle()
             obstacles[i].y = 10 + (count * 37) % (160); // Y位置を制限
             obstacles[i].width = 20 + ((count * 17) % 15); // 幅20-34
             obstacles[i].height = 20 + ((count * 23) % 15); // 高さ20-34
-            obstacles[i].velocity = 1 + ((count * 13) % 3); // 速度1-3
+            
+            // フィールドの速度倍率を適用
+            int base_velocity = 1 + ((count * 13) % 3); // 基本速度1-3
+            obstacles[i].velocity = (base_velocity * field_data[current_field].enemy_speed) / 100;
+            if (obstacles[i].velocity < 1) obstacles[i].velocity = 1; // 最低速度保証
+            
             obstacles[i].max_hp = 2 + ((count * 11) % 4); // HP 2-5
             obstacles[i].hp = obstacles[i].max_hp;
             obstacles[i].color = hue999_to_rgb565((count * 150) % 1000); // カラフルな色
@@ -1524,7 +1559,12 @@ void update_obstacles()
     
     // 新しい敵を生成するタイミング
     obstacle_spawn_timer++;
-    if (obstacle_spawn_timer >= obstacle_spawn_interval)
+    
+    // フィールドのスポーン率倍率を適用
+    int adjusted_spawn_interval = (obstacle_spawn_interval * 100) / field_data[current_field].enemy_spawn_rate;
+    if (adjusted_spawn_interval < 10) adjusted_spawn_interval = 10; // 最低間隔保証
+    
+    if (obstacle_spawn_timer >= adjusted_spawn_interval)
     {
         spawn_obstacle();
         obstacle_spawn_timer = 0;
@@ -1882,8 +1922,12 @@ void init_boss()
     boss.width = 35;
     boss.height = 40;
     boss.color = 0xF81F; // マゼンタ
-    boss.hp = 1000; // 1000ヒット必要
-    boss.max_hp = 1000;
+    
+    // フィールドのボスHP倍率を適用
+    int base_hp = 1000;
+    boss.hp = (base_hp * field_data[current_field].boss_hp_multiplier) / 100;
+    boss.max_hp = boss.hp;
+    
     boss.direction = 1; // 初期は下向き
     boss.velocity = 1;
     boss.shoot_timer = 0;
@@ -2150,8 +2194,8 @@ void TFT_fill_rect2(int x, int y, int width, int height, uint16_t color)
 // ウルトゲージ描画（左下に配置）
 void draw_ult_gauge()
 {
-    int gauge_x = 160;
-    int gauge_y = 200;
+    int gauge_x = 10;
+    int gauge_y = 210;
     int gauge_width = 100;
     int gauge_height = 8;
     
@@ -2236,6 +2280,7 @@ void init_beam()
 // ビーム描画
 void draw_beam()
 {
+    static int green = 0x03E0;
     if (!ult_beam.active) return;
     
     // ビーム本体を描画（グラデーション効果）
@@ -2251,14 +2296,30 @@ void draw_beam()
             beam_color = 0x07FF; // 明るいシアン
         }
         
-        TFT_fill_rect(ult_beam.x, ult_beam.y + i, ult_beam.width, 1, beam_color);
+        // TFT_fill_rect(ult_beam.x, ult_beam.y + i, ult_beam.width, 1, beam_color);
+        switch (i%4){
+            case 0:
+                DMA0((void*)&beam_color,(void*)&framebuf[(ult_beam.y + i)*320 + ult_beam.x],1,0, ult_beam.width);
+                break;
+            case 1:
+                DMA1((void*)&beam_color,(void*)&framebuf[(ult_beam.y + i)*320 + ult_beam.x],1,0, ult_beam.width);
+                break;
+            case 2:
+                DMA2((void*)&beam_color,(void*)&framebuf[(ult_beam.y + i)*320 + ult_beam.x],1,0, ult_beam.width);
+                break;
+            case 3:
+                DMA3((void*)&beam_color,(void*)&framebuf[(ult_beam.y + i)*320 + ult_beam.x],1,0, ult_beam.width);
+                break;
+        }
     }
     
     // ビームエフェクト（点滅）
     if ((count % 4) < 2) {
         // 外側のオーラ効果
-        TFT_fill_rect(ult_beam.x, ult_beam.y - 2, ult_beam.width, 1, 0x03E0); // 薄い緑
-        TFT_fill_rect(ult_beam.x, ult_beam.y + ult_beam.height + 1, ult_beam.width, 1, 0x03E0);
+        // TFT_fill_rect(ult_beam.x, ult_beam.y - 2, ult_beam.width, 1, 0x03E0); // 薄い緑
+        DMA2((void*)&green,(void*)&framebuf[(ult_beam.y - 2)*320 + ult_beam.x],1,0, ult_beam.width);
+        // TFT_fill_rect(ult_beam.x, ult_beam.y + ult_beam.height + 1, ult_beam.width, 1, 0x03E0);
+        DMA3((void*)&green,(void*)&framebuf[(ult_beam.y + ult_beam.height + 1)*320 + ult_beam.x],1,0, ult_beam.width);
     }
 }
 
@@ -2911,20 +2972,38 @@ void main()
             LCD_cursor(0, 0);
             LCD_putstr("shooting game");
             LCD_cursor(0, 1);
-            LCD_putstr("SW4 to start");
+            LCD_putstr("SW4 field select");
             MTU2.TSTR.BIT.CST4 = 1;       // MTU2 CH4スタート
             while(SW4 == 0)
                 ;
+            
+            // フィールド選択画面
+            current_field = select_field();
+            printf("Selected field: %s\n", field_data[current_field].name);
+            
+            // 選択されたフィールドのアセットを読み込み
+            load_field_assets(current_field);
+            
+            // フィールドに応じたパラメータ調整
+            apply_field_modifiers();
+            
             LCD_cursor(0, 0);
-            LCD_putstr("SCORE 200 : boss");
+            LCD_putstr(field_data[current_field].name);
             LCD_cursor(0, 1);
             LCD_putstr("SW4 to pause");
-            TFT_clear2();
+            TFT_draw_string(0,200,"Loading...",_COL_BLACK);
             TFTCTRL = 0x4001;
             DMA0((void *)framebuf,(void*) 0x08000000,0,1,320 * 240);
-            printf("start game\n");
-            MTU2.TSTR.BIT.CST0 = 1;       // MTU2 CH0スタート
-            CMT.CMSTR.BIT.STR1 = 1;		// CMT1スタート
+            // BUTTLE.IMGを読み込み
+            buttle.Data = FileData3;
+            if (find_and_load_file(&buttle, "BUTTLE  .IMG")) {
+                printf("BUTTLE.IMG loaded\n");
+            } else {
+                printf("BUTTLE.IMG not found\n");
+            }
+            TFT_clear2();
+            MTU2.TSTR.BIT.CST0 = 1;       // MTU2 CH0スタート //ADC
+            CMT.CMSTR.BIT.STR1 = 1;		// CMT1スタート //1秒間隔
             init_obstacles(); // 敵初期化
             init_skills(); // プレイヤーの弾初期化
             init_enemy_bullets(); // 敵の弾初期化
@@ -3040,8 +3119,8 @@ void main()
                 while(DMAC1.CHCR.BIT.TE == 0 || DMAC2.CHCR.BIT.TE == 0 ||DMAC3.CHCR.BIT.TE == 0){
                     // printf(".");
                 }
-                TFT_draw_pic(&mari,picx,picy);
                 draw_beam(); // ビーム描画
+                TFT_draw_pic(&mari,picx,picy);
                 draw_obstacles(); // 敵描画
                 draw_skills(); // プレイヤーの弾描画
                 draw_enemy_bullets(); // 敵の弾描画
@@ -3049,30 +3128,36 @@ void main()
                 TFT_draw_char(0,0,(lastcount/10)%10 + '0',_COL_BLACK);
                 TFT_draw_char(6,0,lastcount%10 + '0',_COL_BLACK);
                 TFT_draw_string(12,0,"FPS",_COL_BLACK);
+                while(DMAC1.CHCR.BIT.TE == 0 || DMAC2.CHCR.BIT.TE == 0 ||DMAC3.CHCR.BIT.TE == 0){
+                    // printf(".");
+                }
                 
                 if(frag){
                     frag = 0;
                     
                     // スコア表示（120px以下に配置）
-                    TFT_draw_string(0,200,"SCORE:",_COL_BLACK);
-                    TFT_draw_char(36,200,((score/1000)%10) + '0',_COL_BLACK);
-                    TFT_draw_char(42,200,((score/100)%10) + '0',_COL_BLACK);
-                    TFT_draw_char(48,200,((score/10)%10) + '0',_COL_BLACK);
-                    TFT_draw_char(54,200,(score%10) + '0',_COL_BLACK);
-                    
+                    TFT_draw_string(10,190,"SCORE:",_COL_BLACK);
+                    TFT_draw_char(46,190,((score/1000)%10) + '0',_COL_BLACK);
+                    TFT_draw_char(52,190,((score/100)%10) + '0',_COL_BLACK);
+                    TFT_draw_char(58,190,((score/10)%10) + '0',_COL_BLACK);
+                    TFT_draw_char(64,190,(score%10) + '0',_COL_BLACK);
+
                     // ダメージ表示（120px以下に配置）
-                    TFT_draw_string(80,200,"DMG:",_COL_BLACK);
-                    TFT_draw_char(106,200,(collision_count/10)%10 + '0',_COL_BLACK);
-                    TFT_draw_char(112,200,collision_count%10 + '0',_COL_BLACK);
+                    TFT_draw_string(90,190,"DMG:",_COL_BLACK);
+                    TFT_draw_char(116,190,(collision_count/10)%10 + '0',_COL_BLACK);
+                    TFT_draw_char(122,190,collision_count%10 + '0',_COL_BLACK);
+
+                    // フィールド名表示
+                    TFT_draw_string(160,230,field_data[current_field].name,_COL_BLACK);
                     
                     
                     // ボスHP表示（ボスが出現している時のみ）
                     if (boss.active) {
-                        TFT_draw_string(0,210,"BOSS:",_COL_BLACK);
-                        TFT_draw_char(36,210,((boss.hp/1000)%10) + '0',_COL_BLACK);
-                        TFT_draw_char(42,210,((boss.hp/100)%10) + '0',_COL_BLACK);
-                        TFT_draw_char(48,210,((boss.hp/10)%10) + '0',_COL_BLACK);
-                        TFT_draw_char(54,210,(boss.hp%10) + '0',_COL_BLACK);
+                        TFT_draw_string(180,190,"BOSS:",_COL_BLACK);
+                        TFT_draw_char(216,190,((boss.hp/1000)%10) + '0',_COL_BLACK);
+                        TFT_draw_char(222,190,((boss.hp/100)%10) + '0',_COL_BLACK);
+                        TFT_draw_char(228,190,((boss.hp/10)%10) + '0',_COL_BLACK);
+                        TFT_draw_char(234,190,(boss.hp%10) + '0',_COL_BLACK);
                     }
                     
                     // ウルトゲージ描画（常に表示）
@@ -3144,6 +3229,91 @@ void convert_tone_to_timer_data(struct TONE *tone_array, int count, struct TIMER
             timer_data[i].tgra_wait = (uint16_t)wait_count;
         }
     }
+}
+
+// フィールド選択関数
+int select_field() {
+    int selected = 0;
+    int prev_sw4 = SW4;
+    int prev_sw5 = SW5;
+    int prev_sw6 = SW6;
+    
+    while (1) {
+        // フィールド選択画面の描画
+        TFT_clear2();
+        TFT_draw_string(80, 20, "SELECT FIELD", _COL_BLACK);
+        
+        // フィールド情報の表示
+        for (int i = 0; i < MAX_FIELDS; i++) {
+            uint16_t color = (i == selected) ? 0xF800 : _COL_BLACK; // 選択中は赤色
+            int y_pos = 60 + i * 40;
+            
+            if (i == selected) {
+                TFT_draw_string(20, y_pos, ">", color);
+            }
+            TFT_draw_string(40, y_pos, field_data[i].name, color);
+            
+            // フィールド詳細情報
+            TFT_draw_string(40, y_pos + 15, "Speed:", _COL_BLACK);
+            TFT_draw_char(82, y_pos + 15, (field_data[i].enemy_speed / 100) + '0', _COL_BLACK);
+            TFT_draw_char(88, y_pos + 15, (field_data[i].enemy_speed / 10) % 10 + '0', _COL_BLACK);
+            TFT_draw_char(94, y_pos + 15, field_data[i].enemy_speed % 10 + '0', _COL_BLACK);
+            TFT_draw_string(100, y_pos + 15, "%", _COL_BLACK);
+        }
+        
+        TFT_draw_string(60, 200, "SW4:Up SW5:Down SW6:Select", _COL_BLACK);
+        
+        TFTCTRL = 0x4001;
+        DMA0((void *)framebuf,(void*) 0x08000000,0,1,320 * 240);
+        
+        // ボタン入力処理（チャタリング対策あり）
+        if (SW4 == 1 && prev_sw4 == 0) {
+            selected = (selected - 1 + MAX_FIELDS) % MAX_FIELDS;
+            wait_us(200); // 200ms待機
+        }
+        if (SW5 == 1 && prev_sw5 == 0) {
+            selected = (selected + 1) % MAX_FIELDS;
+            wait_us(200); // 200ms待機
+        }
+        if (SW6 == 1 && prev_sw6 == 0) {
+            current_field = selected;
+            wait_us(200); // 200ms待機
+            break;
+        }
+        
+        prev_sw4 = SW4;
+        prev_sw5 = SW5;
+        prev_sw6 = SW6;
+        wait_us(50); // 50ms待機
+    }
+    
+    return current_field;
+}
+
+// フィールド専用のファイルロード関数
+void load_field_assets(int field_id) {
+    // 背景ファイルをFileData3に読み込む
+    struct file_t field_bg;
+    field_bg.Data = FileData3;
+    
+    if (find_and_load_file(&field_bg, field_data[field_id].bg_file)) {
+        printf("Field background loaded: %s\n", field_data[field_id].bg_file);
+    } else {
+        printf("Field background not found: %s, using default\n", field_data[field_id].bg_file);
+        // デフォルト背景を使用
+    }
+}
+
+// フィールド情報に基づいてゲームパラメータを調整する関数
+void apply_field_modifiers() {
+    // 敵の移動速度調整（グローバル変数があれば調整）
+    // enemy_speed_modifier = field_data[current_field].enemy_speed;
+    
+    // 敵の出現率調整（グローバル変数があれば調整）
+    // enemy_spawn_rate_modifier = field_data[current_field].enemy_spawn_rate;
+    
+    // ボスHP調整（ボス初期化時に使用）
+    // boss_hp_modifier = field_data[current_field].boss_hp_multiplier;
 }
 
 // --------------------------------------------------
