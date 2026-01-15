@@ -840,6 +840,11 @@ void get_File(struct file_t *file)
         for (i = 0; i < DISK.BPB_SecPerClus; i++)
         {
             read_sector(DISK.First_Data_sect + (cluster - 2) * DISK.BPB_SecPerClus + i, dt);
+            // if(cluster == 252){
+                
+            // printf("Reading sector: %u\n", DISK.First_Data_sect + (cluster - 2) * DISK.BPB_SecPerClus + i);
+            // print_sector(DISK.First_Data_sect + (cluster - 2) * DISK.BPB_SecPerClus + i, dt);
+            // }
             for (j = 0; j < 512; j += 2) // 2バイトずつ処理
             {
                 if (sz + 1 < file->FileSize) {
@@ -856,16 +861,19 @@ void get_File(struct file_t *file)
                 
                 if (sz >= file->FileSize)
                 {
+                    printf("File read complete: %u bytes\n", sz);
                     break;
                 }
             }
-            if (sz >= file->FileSize)
+            if (sz >= file->FileSize){
+                printf("File read complete: %u bytes\n", sz);
                 break;
+            }
         }
         if (sz >= file->FileSize)
             break;
         cluster = fat[cluster * 2] | (fat[cluster * 2 + 1] << 8);
-        // printf("Next cluster=%d\n", cluster);
+        printf("Next cluster=%d\n", cluster);
     }
 }
 
@@ -1248,7 +1256,7 @@ int find_and_load_file(struct file_t *target_file, char *target_filename) {
     
     while (1) {
         status = get_file_info(&temp_file);
-        
+        printf("Status: %d, File number: %d\n", status, temp_file.n);
         if (status == 0) {
             // 空きエントリに到達
             if (temp_file.n > (DISK.BPB_RootEntCnt / 32) - 1) {
@@ -1273,6 +1281,7 @@ int find_and_load_file(struct file_t *target_file, char *target_filename) {
                 target_file->Data = saved_data; // Dataポインタを復元
                 
                 // ファイル内容を読み込み
+                printf("File found: %s, Size: %d bytes\n", target_filename, target_file->FileSize);
                 get_File(target_file);
                 
                 return 1; // 成功
@@ -2954,226 +2963,238 @@ void main()
 
 
             // .IMGファイル用の簡略化されたサイズ取得
-            uint8_t *raw_mari = (uint8_t*)mari.Data;
-            int w = raw_mari[0] + (raw_mari[1] << 8);  // width (1バイト目)
-            int h = raw_mari[3];  // height (2バイト目)
-            int hue = 0;
             printf("loaded\n");
             MTU2.TSTR.BIT.CST3 = 1;       // MTU2 CH3スタート
-            // TFT_draw_pic_dma(framebuf,FileData3 + 1,320*240);  // 背景クリア
-            TFT_clear2();
-            DMA0((void *)FileData3,(void*) framebuf,1,1,320 * 120);
-            // while(DMAC0.CHCR.BIT.TE == 0);
-            DMA1((void *)(&FileData3[320*120]),(void*) (&framebuf[320*120]),1,1,320 * 120);
-            while(DMAC1.CHCR.BIT.TE == 0 || DMAC0.CHCR.BIT.TE == 0)
-                ;
-            TFTCTRL = 0x4001;
-            DMA0((void *)framebuf,(void*) 0x08000000,0,1,320 * 240);
-            LCD_cursor(0, 0);
-            LCD_putstr("shooting game");
-            LCD_cursor(0, 1);
-            LCD_putstr("SW4 field select");
-            MTU2.TSTR.BIT.CST4 = 1;       // MTU2 CH4スタート
-            while(SW4 == 0)
-                ;
-            
-            // フィールド選択画面
-            current_field = select_field();
-            printf("Selected field: %s\n", field_data[current_field].name);
-            
-            // 選択されたフィールドのアセットを読み込み
-            load_field_assets(current_field);
-            
-            // フィールドに応じたパラメータ調整
-            apply_field_modifiers();
-            
-            LCD_cursor(0, 0);
-            LCD_putstr(field_data[current_field].name);
-            LCD_cursor(0, 1);
-            LCD_putstr("SW4 to pause");
-            TFT_draw_string(0,200,"Loading...",_COL_BLACK);
-            TFTCTRL = 0x4001;
-            DMA0((void *)framebuf,(void*) 0x08000000,0,1,320 * 240);
-            // BUTTLE.IMGを読み込み
-            buttle.Data = FileData3;
-            if (find_and_load_file(&buttle, "BUTTLE  .IMG")) {
-                printf("BUTTLE.IMG loaded\n");
-            } else {
-                printf("BUTTLE.IMG not found\n");
-            }
-            TFT_clear2();
-            MTU2.TSTR.BIT.CST0 = 1;       // MTU2 CH0スタート //ADC
-            CMT.CMSTR.BIT.STR1 = 1;		// CMT1スタート //1秒間隔
-            init_obstacles(); // 敵初期化
-            init_skills(); // プレイヤーの弾初期化
-            init_enemy_bullets(); // 敵の弾初期化
-            init_boss(); // ボス初期化
-            init_beam(); // ビーム初期化
-            uint16_t cd = 0;
-            
-            // プレイヤーを画面左端に配置
-            picx = 10;
-            picy = 60;
-            j = 0;
-            music_playing = 1;
-            timing = 0;
+                music_playing = 0;
+                // TFT_draw_pic_dma(framebuf,FileData3 + 1,320*240);  // 背景クリア
+                TFT_clear2();
+                DMA0((void *)FileData3,(void*) framebuf,1,1,320 * 120);
+                // while(DMAC0.CHCR.BIT.TE == 0);
+                DMA1((void *)(&FileData3[320*120]),(void*) (&framebuf[320*120]),1,1,320 * 120);
+                while(DMAC1.CHCR.BIT.TE == 0 || DMAC0.CHCR.BIT.TE == 0)
+                    ;
+                TFTCTRL = 0x4001;
+                DMA0((void *)framebuf,(void*) 0x08000000,0,1,320 * 240);
+                LCD_cursor(0, 0);
+                LCD_putstr("shooting game");
+                LCD_cursor(0, 1);
+                LCD_putstr("SW4 to start");
+                MTU2.TSTR.BIT.CST4 = 1;       // MTU2 CH4スタート
+                while(SW4 == 0)
+                    ;
+                LCD_cursor(0, 1);
+                LCD_putstr("                ");
+                buttle.Data = FileData3;
+                if (find_and_load_file(&buttle, "BUTTLE  .IMG")) {
+                    printf("BUTTLE.IMG loaded\n");
+                } else {
+                    printf("BUTTLE.IMG not found\n");
+                }
+                MTU2.TSTR.BIT.CST0 = 1;       // MTU2 CH0スタート //ADC
+                CMT.CMSTR.BIT.STR1 = 1;		// CMT1スタート //1秒間隔
             
             // --------------------------------------------------
-            while (1)
-            {
-                DMA1((void *)FileData3,(void*) framebuf,1,1,320 * 60);
-                DMA2((void *)(&FileData3[320*60]),(void*) (&framebuf[320*60]),1,1,320 * 60);
-                DMA3((void *)(&FileData3[320*120]),(void*) (&framebuf[320*120]),1,1,320 * 60);
-                // printf("ジョイスティック\n");
-                // ジョイスティック制御（横型シューティング用）
-                if ((AD0.ADDR0 >> 6) < 400)
-                {
-                    // -- ジョイスティック上 --
-                    picy -= (20 - (AD0.ADDR0 >> 6) / 20) + 1;
-                    // 画像の高さを考慮した境界設定
-                    if(picy <= 0){
-                        picy = 0;
+            while(1){
+                uint8_t *raw_mari = (uint8_t*)mari.Data;
+                int w = raw_mari[0] + (raw_mari[1] << 8);  // width (1バイト目)
+                int h = raw_mari[3];  // height (2バイト目)
+                int hue = 0;
+                        while(SW4 == 1)
+                            ;
+                
+                // フィールド選択画面
+                // current_field = select_field();
+                // printf("Selected field: %s\n", field_data[current_field].name);
+                
+                // // 選択されたフィールドのアセットを読み込み
+                // load_field_assets(current_field);
+                
+                // // フィールドに応じたパラメータ調整
+                // apply_field_modifiers();
+                
+                LCD_cursor(0, 0);
+                LCD_putstr("shooting game");
+                LCD_cursor(0, 1);
+                LCD_putstr("SW4 to end game");
+                TFT_draw_string(0,200,"Loading...",_COL_BLACK);
+                TFTCTRL = 0x4001;
+                DMA0((void *)framebuf,(void*) 0x08000000,0,1,320 * 240);
+                // BUTTLE.IMGを読み込み
+                TFT_clear2();
+                init_obstacles(); // 敵初期化
+                init_skills(); // プレイヤーの弾初期化
+                init_enemy_bullets(); // 敵の弾初期化
+                init_boss(); // ボス初期化
+                init_beam(); // ビーム初期化
+                uint16_t cd = 0;
+                
+                // プレイヤーを画面左端に配置
+                picx = 10;
+                picy = 60;
+                j = 0;
+                music_playing = 1;
+                timing = 0;
+                while (1){
+                    DMA1((void *)FileData3,(void*) framebuf,1,1,320 * 60);
+                    DMA2((void *)(&FileData3[320*60]),(void*) (&framebuf[320*60]),1,1,320 * 60);
+                    DMA3((void *)(&FileData3[320*120]),(void*) (&framebuf[320*120]),1,1,320 * 60);
+                    // printf("ジョイスティック\n");
+                    // ジョイスティック制御（横型シューティング用）
+                    if ((AD0.ADDR0 >> 6) < 400)
+                    {
+                        // -- ジョイスティック上 --
+                        picy -= (20 - (AD0.ADDR0 >> 6) / 20) + 1;
+                        // 画像の高さを考慮した境界設定
+                        if(picy <= 0){
+                            picy = 0;
+                        }
                     }
-                }
-                else if ((AD0.ADDR0 >> 6) > 600)
-                {
-                    // -- ジョイスティック下 --
-                    picy += ((AD0.ADDR0 >> 6) - 600) / 20 + 1;
-                    // 画像の高さを考慮した境界設定
-                    if(picy >= (180 - h)){
-                        picy = 180 - h;
+                    else if ((AD0.ADDR0 >> 6) > 600)
+                    {
+                        // -- ジョイスティック下 --
+                        picy += ((AD0.ADDR0 >> 6) - 600) / 20 + 1;
+                        // 画像の高さを考慮した境界設定
+                        if(picy >= (180 - h)){
+                            picy = 180 - h;
+                        }
                     }
-                }
-                if ((AD0.ADDR1 >> 6) < 400)
-                {
-                    // -- ジョイスティック右 --
-                    picx += (20 - (AD0.ADDR1 >> 6) / 20) + 1;
-                    // 画面中央付近まで移動可能
-                    if(picx >= 160){
-                        picx = 160;
+                    if ((AD0.ADDR1 >> 6) < 400)
+                    {
+                        // -- ジョイスティック右 --
+                        picx += (20 - (AD0.ADDR1 >> 6) / 20) + 1;
+                        // 画面中央付近まで移動可能
+                        if(picx >= 160){
+                            picx = 160;
+                        }
                     }
-                }
-                else if ((AD0.ADDR1 >> 6) > 600)
-                {
-                    // -- ジョイスティック左 --
-                    picx -= ((AD0.ADDR1 >> 6) - 600) / 20 + 1;
-                    if(picx <= 0){
-                        picx = 0;
+                    else if ((AD0.ADDR1 >> 6) > 600)
+                    {
+                        // -- ジョイスティック左 --
+                        picx -= ((AD0.ADDR1 >> 6) - 600) / 20 + 1;
+                        if(picx <= 0){
+                            picx = 0;
+                        }
                     }
-                }
 
-                // プレイヤーの弾発射（SW5ボタンで連射）
-                if (SW5 == 1 && cd >= 5) // 連射間隔を短く
-                {
-                    spawn_skill(picx, picy, w, h);
-                    cd = 0;
-                }
-                cd++;
-                // printf("ウルトシステム\n");
-                // ウルトシステム更新
-                update_ult_gauge(); // ゲージ自然減少
-                check_ult_input(); // ウルト発動入力チェック
-                update_ult(); // ウルト状態更新
-                
-                // TFT_draw_pic_dma(framebuf,FileData1,320*120);  // 背景クリア
-                // DMA1((void *)FileData1,(void*) framebuf,1,1,320 * 120);
-                // printf("画面描画\n");
-                // printf("\n");
-                // DMA1((void *)FileData3,(void*) framebuf + 320*120,1,1,320 * 120);
-                // while(DMAC1.CHCR.BIT.TE == 0)
-                //     ;
-                
-                
-                // ビームシステム
-                check_beam_collision(); // ビームの当たり判定
-                
-                // 敵システム
-                // printf("enem\n");
-                update_obstacles(); // 敵更新
-                
-                // プレイヤーの弾システム
-                // printf("skill\n");
-                update_skills(); // プレイヤーの弾更新
-                check_skill_collision(); // プレイヤーの弾と敵の当たり判定
-                
-                // 敵の弾幕システム
-                // printf("enem_skill\n");
-                // printf("1\n");
-                update_enemy_bullets(); // 敵の弾更新
-                // printf("2\n");
-                check_player_bullet_collision(picx, picy, w, h); // プレイヤーと敵の弾の当たり判定
-                // printf("3\n");
-                
-                // ボスシステム
-                // printf("boss\n");
-                spawn_boss(); // ボス生成チェック
-                update_boss(); // ボス更新
-                check_skill_boss_collision(); // プレイヤーの弾とボスの当たり判定
-                
-                // プレイヤーと敵の当たり判定
-                check_player_collision(picx, picy, w, h);
-                
-                
-                // UI表示
-                // プレイヤー描画
-                while(DMAC1.CHCR.BIT.TE == 0 || DMAC2.CHCR.BIT.TE == 0 ||DMAC3.CHCR.BIT.TE == 0){
-                    // printf(".");
-                }
-                draw_beam(); // ビーム描画
-                TFT_draw_pic(&mari,picx,picy);
-                draw_obstacles(); // 敵描画
-                draw_skills(); // プレイヤーの弾描画
-                draw_enemy_bullets(); // 敵の弾描画
-                draw_boss(); // ボス描画
-                TFT_draw_char(0,0,(lastcount/10)%10 + '0',_COL_BLACK);
-                TFT_draw_char(6,0,lastcount%10 + '0',_COL_BLACK);
-                TFT_draw_string(12,0,"FPS",_COL_BLACK);
-                while(DMAC1.CHCR.BIT.TE == 0 || DMAC2.CHCR.BIT.TE == 0 ||DMAC3.CHCR.BIT.TE == 0){
-                    // printf(".");
-                }
-                
-                if(frag){
-                    frag = 0;
+                    // プレイヤーの弾発射（SW5ボタンで連射）
+                    if (SW5 == 1 && cd >= 5) // 連射間隔を短く
+                    {
+                        spawn_skill(picx, picy, w, h);
+                        cd = 0;
+                    }
+                    cd++;
+                    // printf("ウルトシステム\n");
+                    // ウルトシステム更新
+                    update_ult_gauge(); // ゲージ自然減少
+                    check_ult_input(); // ウルト発動入力チェック
+                    update_ult(); // ウルト状態更新
                     
-                    // スコア表示（120px以下に配置）
-                    TFT_draw_string(10,190,"SCORE:",_COL_BLACK);
-                    TFT_draw_char(46,190,((score/1000)%10) + '0',_COL_BLACK);
-                    TFT_draw_char(52,190,((score/100)%10) + '0',_COL_BLACK);
-                    TFT_draw_char(58,190,((score/10)%10) + '0',_COL_BLACK);
-                    TFT_draw_char(64,190,(score%10) + '0',_COL_BLACK);
-
-                    // ダメージ表示（120px以下に配置）
-                    TFT_draw_string(90,190,"DMG:",_COL_BLACK);
-                    TFT_draw_char(116,190,(collision_count/10)%10 + '0',_COL_BLACK);
-                    TFT_draw_char(122,190,collision_count%10 + '0',_COL_BLACK);
-
-                    // フィールド名表示
-                    TFT_draw_string(160,230,field_data[current_field].name,_COL_BLACK);
+                    // TFT_draw_pic_dma(framebuf,FileData1,320*120);  // 背景クリア
+                    // DMA1((void *)FileData1,(void*) framebuf,1,1,320 * 120);
+                    // printf("画面描画\n");
+                    // printf("\n");
+                    // DMA1((void *)FileData3,(void*) framebuf + 320*120,1,1,320 * 120);
+                    // while(DMAC1.CHCR.BIT.TE == 0)
+                    //     ;
                     
                     
-                    // ボスHP表示（ボスが出現している時のみ）
-                    if (boss.active) {
-                        TFT_draw_string(180,190,"BOSS:",_COL_BLACK);
-                        TFT_draw_char(216,190,((boss.hp/1000)%10) + '0',_COL_BLACK);
-                        TFT_draw_char(222,190,((boss.hp/100)%10) + '0',_COL_BLACK);
-                        TFT_draw_char(228,190,((boss.hp/10)%10) + '0',_COL_BLACK);
-                        TFT_draw_char(234,190,(boss.hp%10) + '0',_COL_BLACK);
+                    // ビームシステム
+                    check_beam_collision(); // ビームの当たり判定
+                    
+                    // 敵システム
+                    // printf("enem\n");
+                    update_obstacles(); // 敵更新
+                    
+                    // プレイヤーの弾システム
+                    // printf("skill\n");
+                    update_skills(); // プレイヤーの弾更新
+                    check_skill_collision(); // プレイヤーの弾と敵の当たり判定
+                    
+                    // 敵の弾幕システム
+                    // printf("enem_skill\n");
+                    // printf("1\n");
+                    update_enemy_bullets(); // 敵の弾更新
+                    // printf("2\n");
+                    check_player_bullet_collision(picx, picy, w, h); // プレイヤーと敵の弾の当たり判定
+                    // printf("3\n");
+                    
+                    // ボスシステム
+                    // printf("boss\n");
+                    spawn_boss(); // ボス生成チェック
+                    update_boss(); // ボス更新
+                    check_skill_boss_collision(); // プレイヤーの弾とボスの当たり判定
+                    
+                    // プレイヤーと敵の当たり判定
+                    check_player_collision(picx, picy, w, h);
+                    
+                    
+                    // UI表示
+                    // プレイヤー描画
+                    while(DMAC1.CHCR.BIT.TE == 0 || DMAC2.CHCR.BIT.TE == 0 ||DMAC3.CHCR.BIT.TE == 0){
+                        // printf(".");
+                    }
+                    draw_beam(); // ビーム描画
+                    TFT_draw_pic(&mari,picx,picy);
+                    draw_obstacles(); // 敵描画
+                    draw_skills(); // プレイヤーの弾描画
+                    draw_enemy_bullets(); // 敵の弾描画
+                    draw_boss(); // ボス描画
+                    TFT_draw_char(0,0,(lastcount/10)%10 + '0',_COL_BLACK);
+                    TFT_draw_char(6,0,lastcount%10 + '0',_COL_BLACK);
+                    TFT_draw_string(12,0,"FPS",_COL_BLACK);
+                    while(DMAC1.CHCR.BIT.TE == 0 || DMAC2.CHCR.BIT.TE == 0 ||DMAC3.CHCR.BIT.TE == 0){
+                        // printf(".");
                     }
                     
-                    // ウルトゲージ描画（常に表示）
-                    draw_ult_gauge();
-                    TFTCTRL = 0x4001;
-                    DMA0((void *)framebuf,(void*) 0x08000000,0,1,320 * 240);
-                }else{
-                    TFTCTRL = 0x4001;
-                    DMA0((void *)framebuf,(void*) 0x08000000,0,1,320 * 180);
-                }
+                    if(frag){
+                        frag = 0;
+                        
+                        // スコア表示（120px以下に配置）
+                        TFT_draw_string(10,190,"SCORE:",_COL_BLACK);
+                        TFT_draw_char(46,190,((score/1000)%10) + '0',_COL_BLACK);
+                        TFT_draw_char(52,190,((score/100)%10) + '0',_COL_BLACK);
+                        TFT_draw_char(58,190,((score/10)%10) + '0',_COL_BLACK);
+                        TFT_draw_char(64,190,(score%10) + '0',_COL_BLACK);
 
-                
-                
-                count++;
-                if(timing_frag){
-                        timing_frag = 0;
+                        // ダメージ表示（120px以下に配置）
+                        TFT_draw_string(90,190,"DMG:",_COL_BLACK);
+                        TFT_draw_char(116,190,(collision_count/10)%10 + '0',_COL_BLACK);
+                        TFT_draw_char(122,190,collision_count%10 + '0',_COL_BLACK);
+
+                        // フィールド名表示
+                        TFT_draw_string(160,230,field_data[current_field].name,_COL_BLACK);
+                        
+                        
+                        // ボスHP表示（ボスが出現している時のみ）
+                        if (boss.active) {
+                            TFT_draw_string(180,190,"BOSS:",_COL_BLACK);
+                            TFT_draw_char(216,190,((boss.hp/1000)%10) + '0',_COL_BLACK);
+                            TFT_draw_char(222,190,((boss.hp/100)%10) + '0',_COL_BLACK);
+                            TFT_draw_char(228,190,((boss.hp/10)%10) + '0',_COL_BLACK);
+                            TFT_draw_char(234,190,(boss.hp%10) + '0',_COL_BLACK);
+                        }
+                        
+                        // ウルトゲージ描画（常に表示）
+                        draw_ult_gauge();
+                        TFTCTRL = 0x4001;
+                        DMA0((void *)framebuf,(void*) 0x08000000,0,1,320 * 240);
+                    }else{
+                        TFTCTRL = 0x4001;
+                        DMA0((void *)framebuf,(void*) 0x08000000,0,1,320 * 180);
+                    }
+
+                    
+                    
+                    count++;
+                    if(timing_frag){
+                            timing_frag = 0;
+                    }
+                    if(SW4 == 1){
+                        while(SW4 == 1)
+                            ;
+                        music_playing = 0;
+                        break; // フィールド選択へ戻る
+                    }
                 }
             }
         }
