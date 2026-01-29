@@ -873,7 +873,7 @@ void get_File(struct file_t *file)
         if (sz >= file->FileSize)
             break;
         cluster = fat[cluster * 2] | (fat[cluster * 2 + 1] << 8);
-        printf("Next cluster=%d\n", cluster);
+        // printf("Next cluster=%d\n", cluster);
     }
 }
 
@@ -3192,8 +3192,14 @@ void main()
                     if(SW4 == 1){
                         while(SW4 == 1)
                             ;
-                        music_playing = 0;
-                        break; // フィールド選択へ戻る
+                        while(SW6 == 0){
+                            if(SW5 == 1){
+                                while(SW5 == 1)
+                                    ;
+                                music_playing = 0;
+                                break; // フィールド選択へ戻る
+                            }
+                        }
                     }
                 }
             }
