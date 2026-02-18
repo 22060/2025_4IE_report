@@ -1,0 +1,169 @@
+\documentclass[a4paper,11pt]{ltjsarticle}
+% 数式
+\usepackage{amsmath,amsfonts}
+\usepackage{bm}
+% 画像
+\usepackage{graphicx}
+\usepackage{circuitikz}
+\usepackage{amsmath,amssymb}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage{tikz}
+\usepackage{askmaps}
+\usepackage{multirow}
+\usepackage{bigstrut}
+\usepackage{slashbox}
+\usepackage{rotating}
+\usepackage{listings}
+% 数式
+\usepackage{physics}
+\usepackage{mathtools}
+% 画像
+\usepackage{subcaption}
+% 表
+\usepackage{makecell}
+% その他
+\usepackage{url}
+\usepackage{ascmac}
+\usepackage{cases}
+\usepackage{here}
+\usepackage{upgreek}
+% 日本語対応
+\usepackage{luatexja}
+\usepackage{luatexja-fontspec}
+
+\AtBeginDocument{\RenewCommandCopy\qty\SI}
+
+
+\definecolor{commentgreen}{RGB}{0,200,0}
+\definecolor{eminence}{RGB}{120,80,250}
+\definecolor{weborange}{RGB}{255,165,0}
+\definecolor{frenchplum}{RGB}{10,150,200}
+\definecolor{commentgreen}{RGB}{0,200,0}
+\definecolor{eminence}{RGB}{120,80,250}
+\definecolor{weborange}{RGB}{255,165,0}
+\definecolor{frenchplum}{RGB}{10,150,200}
+
+\lstset{
+        language = {C},
+        basicstyle = \ttfamily\small,
+        keywordstyle=\color{eminence}\ttfamily\bfseries,
+        commentstyle=\color{commentgreen}\textit,
+    identifierstyle=\color{black}\ttfamily,
+        xleftmargin=.35in,
+        frame=lines,
+    showstringspaces=false,
+        numbers=left,
+        stepnumber = 1,
+        breaklines=true,
+        numberstyle = \ttfamily\normalsize,
+    tabsize=4,  
+        emph={int, int8_t, int16_t, int32_t, int64_t, uint8_t, uint16_t, uint32_t, uint64_t, char, double, float, unsigned, void, bool},
+        emphstyle={\color{blue}}, 
+        morekeywords={>, <, ., ;, +, -, *, /, !, =, ~},
+        breakindent = 10pt, 
+        framexleftmargin=10mm, 
+        columns=fixed,
+        basewidth=0.5em,
+        }
+
+% 特定のスタイル設定
+\lstdefinestyle{customtxt}{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{lightgray},
+  frame=single,
+  breaklines=true,
+  columns=fullflexible,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=4,
+}
+
+\newcommand{\fig}[4]{
+    \begin{figure}[htbp]
+      \centering
+      \includegraphics{./image/#1}
+      \caption{#2}
+      \label{fig:#3}
+    \end{figure}
+  }
+\begin{document}
+
+\title{組込みプログラミング I 最終課題}
+\author{212 古城隆人}
+\date{\today}
+\maketitle
+\newpage
+\section{注意}
+作成したmotファイルをtera term経由で書き込もうとしたら，バッファオーバーフローのエラーが出て書き込めませんでした．
+自作したプログラムにて書き込みを行ってこれまで開発してたため，エラーの原因がわかりません．そのため書き込み用のプログラムと実行ファイルもzipファイルに同封します．
+また，Makefileについても独自の構成を行ったため，再現したフォルダ構成をcファイル\underline{~}make用 フォルダに用意しました．配下のfatフォルダのディレクトリでmakeコマンドでコンパイルとリンクを実行できます．
+\section{使用した機能}
+使用した機能と説明を表\ref{tab:table1}に示す．
+\begin{table}[htbp]
+  \centering
+  \caption{機能説明}
+  \label{tab:table1}
+  \begin{tabular}{|c|p{10cm}|}
+    \hline
+    機能                          & 説明                                                                                                                           \\
+    \hline
+    割り込み1(MTU2\underline{~}CH1) & スピーカーの音を鳴らすために使用．コンペアマッチ周期を弄ることにより，周波数を変更                                                                                    \\
+    \hline
+    割り込み2(MTU2\underline{~}CH3) & 音楽制御用割り込みで，割り込み1と割り込み2のコンペアマッチ周期を弄り，今鳴らす音と次に音を鳴らすタイミングまでのdelayを実現                                                            \\
+    \hline
+    割り込み3(MTU2\underline{~}CH4) & 7seg制御用割り込みで，ダイナミック点灯をこの割り込み周期で行っている．また，表示する内容は今鳴らしている音の周波数である．                                                              \\
+    \hline
+    割り込み4(CMT1)                 & 1秒を取得するための関数．main関数で一秒周期で実行させる処理があるため，フラグを立てることにより，1秒を制御している．また，画面更新頻度(fps)を保持する機能も有する．                                      \\
+    \hline
+    割り込み5(MTU0\underline{~}CH0) & AD変換のタイミング制御用割り込みで，この割り込み周期は不変でAD変換モジュールを呼び出している．                                                                            \\
+    \hline
+    ADC(AD0\underbar{~}CH1,CH2) & analog digital converter(ADC)を使用して，ジョイスティックについている可変抵抗器の値(電圧)をディジタル値で取得している．                                                  \\
+    \hline
+    DMA(DMAC$0 \sim 1$)         & ダイレクトメモリアドレスで，CPUを介さずにメモリ間転送を実現できる．そのため，描画する画像を保存している変数から描画用関数への転送や，描画用変数からTFTへの転送にDMAを用いた．これにより，TFTへのデータ送信速度が100倍以上速くなっている． \\
+    \hline
+    SDカード(SPI mode)             & SDカードにゲーム描画用の画像ファイルを保存している．初期化を行った後に，変数にSDカードから読み込んでいる．                                                                      \\
+    \hline
+    TFT                         & ゲームの画面を描画している．ディスプレイにFPGAがつながっており，メモリに書き込む動作を行うことにより，画面描画を行える．                                                               \\
+    \hline
+    LED                         & 1秒周期を確認するために，0.5Hzで光るLED(1秒ごとに反転)を実装した．                                                                                      \\
+    \hline
+    プッシュSW                      & ゲームの操作用にSW4 $\sim$ SW6を使用している．                                                                                               \\
+    \hline
+    スピーカー(SPK)                  & 音楽を鳴らすために使用している．                                                                                                             \\
+    \hline
+    LCD                         & ゲームタイトルと操作説明用の文章をLCDに表示させている．                                                                                                \\
+    \hline
+    7seg                        & 今再生している音の周波数を7セグメントLEDで表示させている．                                                                                              \\
+    \hline
+  \end{tabular}
+\end{table}
+\newpage
+\section{ゲームについて}
+画面がloadされたら，タイトルが表示される．その画面で，SW4を押すことによりゲームがスタートする．
+\subsection{移動について}
+プレイヤーは，ジョイスティックにより動かすことが出来る．ジョイスティックの傾きがプレイヤーの速度になるため，たくさん傾けると，移動速度が速くなる．
+\subsection{ゲームスタート $\sim$ SCORE:200}
+初期状態で，プレイヤーは左端にスポーンする．この状態でSW5を押すことにより，スキルを発射する．また，スコアの上昇と比例して，ウルトゲージも貯まっていく．\\
+ウルトゲージがマックスになったときにSW6を押すことにより，ウルトを発動させることが出来る．このウルトは大ダメージを生み出すことが出来る．
+そして，敵を倒すことにより，SCOREが加算されていく．敵は画面の右端からスポーンして左方向に移動して，乱数によりスキルを使用する．
+\subsection{SCORE200以降}
+SCOREが200を超えると，ボスがスポーンする．ボスは画面の右端の上下を移動している．ボスにはモードがあり，HPが減っていくと，スキルの生成頻度があがったりする．
+\subsection{一時停止機能}
+ゲームをスタートした状態でSW4を押すことにより，一時停止画面が現れる．SW5が押されると，ゲームがリセットされ，SW6が押されるとゲームを再開する．
+\subsection{ダメージについて}
+敵が生成したスキル(小さい四角)にプレイヤーが触れると，ダメージが蓄積されていく．このスコアは触れた回数のカウントと同じ値であり，いくら加算されてもペナルティや挙動の変化はない．
+\subsection{終了条件}
+このプログラムは一度スタートしたらリセットされるまで動き続ける．そのため，終了条件はない．
+\section{ファイル検索機能について}
+SDカード内のファイルを検索する関数がある．そのため，保存するfileは順不同でも読み込むことが出来る．
+\newpage
+\section{プログラムリスト}
+\lstinputlisting{./fat.c}
+
+
+
+
+
+\end{document}

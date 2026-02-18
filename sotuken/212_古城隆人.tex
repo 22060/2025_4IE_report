@@ -1,0 +1,130 @@
+\documentclass[a4paper,11pt]{ltjsarticle}
+% 数式
+\usepackage{amsmath,amsfonts}
+\usepackage{bm}
+% 画像
+\usepackage{graphicx}
+\usepackage{circuitikz}
+\usepackage{amsmath,amssymb}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage{tikz}
+\usepackage{askmaps}
+\usepackage{multirow}
+\usepackage{bigstrut}
+\usepackage{slashbox}
+\usepackage{rotating}
+\usepackage{listings}
+% 数式
+\usepackage{physics}
+\usepackage{mathtools}
+% 画像
+\usepackage{subcaption}
+% 表
+\usepackage{makecell}
+% その他
+\usepackage{url}
+\usepackage{ascmac}
+\usepackage{cases}
+\usepackage{here}
+\usepackage{upgreek}
+% 日本語対応
+\usepackage{luatexja}
+\usepackage{luatexja-fontspec}
+
+\AtBeginDocument{\RenewCommandCopy\qty\SI}
+
+
+\definecolor{commentgreen}{RGB}{0,200,0}
+\definecolor{eminence}{RGB}{120,80,250}
+\definecolor{weborange}{RGB}{255,165,0}
+\definecolor{frenchplum}{RGB}{10,150,200}
+\definecolor{commentgreen}{RGB}{0,200,0}
+\definecolor{eminence}{RGB}{120,80,250}
+\definecolor{weborange}{RGB}{255,165,0}
+\definecolor{frenchplum}{RGB}{10,150,200}
+
+\lstset{
+        language = {C},
+        basicstyle = \ttfamily\small,
+        keywordstyle=\color{eminence}\ttfamily\bfseries,
+        commentstyle=\color{commentgreen}\textit,
+    identifierstyle=\color{black}\ttfamily,
+        xleftmargin=.35in,
+        frame=lines,
+    showstringspaces=false,
+        numbers=left,
+        stepnumber = 1,
+        breaklines=true,
+        numberstyle = \ttfamily\normalsize,
+    tabsize=4,  
+        emph={int, int8_t, int16_t, int32_t, int64_t, uint8_t, uint16_t, uint32_t, uint64_t, char, double, float, unsigned, void, bool},
+        emphstyle={\color{blue}}, 
+        morekeywords={>, <, ., ;, +, -, *, /, !, =, ~},
+        breakindent = 10pt, 
+        framexleftmargin=10mm, 
+        columns=fixed,
+        basewidth=0.5em,
+        }
+
+% 特定のスタイル設定
+\lstdefinestyle{customtxt}{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{lightgray},
+  frame=single,
+  breaklines=true,
+  columns=fullflexible,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=4,
+}
+
+\newcommand{\fig}[4]{
+    \begin{figure}[htbp]
+      \centering
+      \includegraphics{./image/#1}
+      \caption{#2}
+      \label{fig:#3}
+    \end{figure}
+  }
+\begin{document}
+
+\title{プレ卒研究}
+\author{古城隆人}
+\date{\today}
+\maketitle
+
+\newpage
+
+\section{生成AIについての学習}
+深層学習モデルのニュートラルネットワークの生成AIについて調べて，発表を行った．
+生成AIの根幹には，トランスフォーマーがあり，生成するための機構としてセルフアテンション機構がある．
+セルフアテンション機構では，入力されたトークンについて畳み込みを行う．
+畳み込みでは二種類のウェイトを用いて全部のトークンについて各トークンへの結びつきの強さを計算する．
+畳み込みによってトークン群の結びつきの理解を行った後に，意味を計算するためのvalueベクトルとの内積を求めて，
+セルフアテンション機構から出力される．
+トランスフォーマーではこの出力に非線形変換などを行い，文脈の理解を行う(学習によって変わるため，厳密には違うが，単語をトークンとして受け取る場合は時系列の把握や主語の把握などを内部で行っている．)
+生成AIでは，このトランスフォーマー機構を用いることにより，次に来るトークンを予測することが出来る．
+\section{研究の引継ぎ}
+先輩が行った研究について説明をもらい，どのようなことをしているかについて知ることが出来た．
+\subsection{強化学習による特定環境下での最適化}
+エージェントがフィールドにおいて，行動を行うと，行動に応じてスコアがエージェントに帰ってくることにより，
+エージェントの行動を学習させていた．また，報酬関数の係数や，強化学習の隠れ層の数やサイズについてベイズ最適化を用いて
+最適化を行っていた．これらの研究についての問題点についても説明をもらい，来年の研究に活かしていく．
+\subsection{問題点}
+ベイズ最適化や，強化学習では，特定環境，変数が少ない環境で特に効果を発揮する．しかし，今回目的としているAIは，
+観光地などの人が多い中で自立走行するエージェントの開発であり，変数がたくさんあったり同じような場面が一度たりとも起きないような場面である．
+そのため，これらの最適化を行っても，障害物が完全なランダムな動きをする場合においてスコアの伸びは少なかったという研究結果がある．
+\section{来年行う研究についての検討}
+先輩の研究の問題点について知ることが出来たため，そこを改善しながら目的に近づくような研究内容を検討した．
+前提として，歩行者の動きはある程度規則性(ここでいうある程度とは，完全ランダムな動きからある程度という意味を示す．)があると
+して，その規則性をAIを使用して分析することを第一目標とする．ここで使用するデータは映像データを元にし，その映像データから必要なデータを切り出すための物体認識モデルや，速度を計算するための時系列モデルを用いて抽出を行いベクトルデータに変換させる．
+この各物体の情報を入力としたAIを用いて，歩行者の動きを再現するためのAIを生成する．
+また，手法についてはもう一つ検討をしていて，それぞれ分割させたAIに対して，こちらは映像を入力として生成した歩行者データをベクトルデータとして出力するAIの制作である．
+校舎は計算量が膨大になったり設計が大変だと思うため，先に構築を開始して，計算を行っている間に前者の手法を試す等を検討している．\\
+第二目標としては，生成された歩行者データを生成器とした敵対生成ネットワークの構築である．
+これにより，歩行者の動きについてある程度の規則性を基にして自立走行をするAIの開発を最終目標として掲げる．
+
+
+\end{document}

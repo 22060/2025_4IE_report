@@ -1,0 +1,78 @@
+<html>
+
+<head>
+    <title>入荷処理ページ</title>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="./production.js"></script>
+    <style>
+        table,
+        th,
+        td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 10px;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            max-width: 1500px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 1);
+            position: relative;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ヘッダーコピペ用 -->
+    <link rel="stylesheet" href="./head.css" />
+    <label class="label">
+        <div class="hamburger-menu" id="hamburger">
+            <input type="checkbox" id="menu-btn-check">
+            <label for="menu-btn-check" class="menu-btn"><span></span></label>
+            <div class="menu-content">
+                <ul>
+                    <li>
+                        <a href="./edit.html">編集画面</a>
+                    </li>
+                    <li>
+                        <a href="./Arrival.html">入荷処理ページ</a>
+                    </li>
+                    <li>
+                        <a href="./production.html">生産ページ</a>
+                    </li>
+                    <!-- <li>
+                    <a href="#">メニューリンク3</a>
+                </li> -->
+                </ul>
+            </div>
+        </div>
+        <div class="title2">在庫管理システム</div>
+        <div></div>
+        <div id="titles">
+            <a class="title" href="./edit.html">編集画面</a>
+            <a class="title" href="./Arrival.html">入荷処理ページ</a>
+            <a class="title" href="./production.html">生産ページ</a>
+        </div>
+        <script src="./head.js"></script>
+    </label>
+    <!-- ヘッダーコピペ用ここまで -->
+    <table id="tables" class="container">
+    </table>
+    <table id="all" class="container">
+    </table>
+</body>
+
+</html>

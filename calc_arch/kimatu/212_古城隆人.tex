@@ -1,0 +1,136 @@
+\documentclass[a4paper,11pt]{ltjsarticle}
+% 数式
+\usepackage{amsmath,amsfonts}
+\usepackage{bm}
+% 画像
+\usepackage{graphicx}
+\usepackage{circuitikz}
+\usepackage{amsmath,amssymb}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage{tikz}
+\usepackage{askmaps}
+\usepackage{multirow}
+\usepackage{bigstrut}
+\usepackage{slashbox}
+\usepackage{rotating}
+\usepackage{listings}
+% 数式
+\usepackage{physics}
+\usepackage{mathtools}
+% 画像
+\usepackage{subcaption}
+% 表
+\usepackage{makecell}
+% その他
+\usepackage{url}
+\usepackage{ascmac}
+\usepackage{cases}
+\usepackage{here}
+\usepackage{upgreek}
+% 日本語対応
+\usepackage{luatexja}
+\usepackage{luatexja-fontspec}
+
+\AtBeginDocument{\RenewCommandCopy\qty\SI}
+
+
+\definecolor{commentgreen}{RGB}{0,200,0}
+\definecolor{eminence}{RGB}{120,80,250}
+\definecolor{weborange}{RGB}{255,165,0}
+\definecolor{frenchplum}{RGB}{10,150,200}
+\definecolor{commentgreen}{RGB}{0,200,0}
+\definecolor{eminence}{RGB}{120,80,250}
+\definecolor{weborange}{RGB}{255,165,0}
+\definecolor{frenchplum}{RGB}{10,150,200}
+
+\lstset{
+        language = {C},
+        basicstyle = \ttfamily\small,
+        keywordstyle=\color{eminence}\ttfamily\bfseries,
+        commentstyle=\color{commentgreen}\textit,
+    identifierstyle=\color{black}\ttfamily,
+        xleftmargin=.35in,
+        frame=lines,
+    showstringspaces=false,
+        numbers=left,
+        stepnumber = 1,
+        breaklines=true,
+        numberstyle = \ttfamily\normalsize,
+    tabsize=4,  
+        emph={int, int8_t, int16_t, int32_t, int64_t, uint8_t, uint16_t, uint32_t, uint64_t, char, double, float, unsigned, void, bool},
+        emphstyle={\color{blue}}, 
+        morekeywords={>, <, ., ;, +, -, *, /, !, =, ~},
+        breakindent = 10pt, 
+        framexleftmargin=10mm, 
+        columns=fixed,
+        basewidth=0.5em,
+        }
+
+% 特定のスタイル設定
+\lstdefinestyle{customtxt}{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{lightgray},
+  frame=single,
+  breaklines=true,
+  columns=fullflexible,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=4,
+}
+
+\newcommand{\fig}[4]{
+    \begin{figure}[htbp]
+      \centering
+      \includegraphics{./image/#1}
+      \caption{#2}
+      \label{fig:#3}
+    \end{figure}
+  }
+\begin{document}
+\section{Direct Memory Access(DMA)}
+DMAとは，CPUを介さずに直接メモリにアクセスし，データ転送を行う機能である．
+そのため，CPUではCPUでしか行えない演算を行い，メモリの転送はDMAが行うことにより演算速度の高速化を図ることが出来る．
+DMAの転送は通常DMA controller(DMAC)にて行われる．CPUはDMACにデータの転送元や転送先，モードや書き込み回数を指定し，
+開始させるトリガーを送ればCPUでの動作は終わり，あとのデータ転送はDMACにより行われる．
+DMAコントローラによって転送されるアドレスは主記憶アドレスであり，仮想記憶を有するCPUでは，DMAで使用する主記憶
+アドレスと仮想アドレスを対応させるか，複数のページにわたってデータのDMA転送を行う場合には，メモリは主記憶上連続している必要がある．
+\subsection{Bus Arbitration}
+DMACとCPUではデータバスを共有しており，バスの使用権を調整する必要がある．そこで使用されるのがBus Arbitrationであり，この
+プロセスでは，同じバスに接続した複数のマスターデバイスがバスの使用権を要求した場合に，どのデバイスに使用権を与えるかを決定する．
+Bus Arbitrationには2つの方式があり，それぞれ以下の通りである．そのためDMAの送信方式はこの二つをどちらか指定でいるようになっている．
+\subsubsection{サイクルスチール方式}
+サイクルスチール方式では，CPUがバスを使用していない間，転送を行う方式のもので，CPUが常に
+バスを使用していると限らないため，有効にバスを使用することが出来る．しかし，CPUがバスを使用している場合は
+DMACは転送を行うことが出来ない．
+\subsubsection{バースト方式}
+バースト方式では，DMACがバスの使用権を取得した場合，一定回数連続で転送を行う方式である．
+この方式では，DMACが一度に大量のデータを転送することが出来るため，転送効率が良い．しかし，
+DMACがバスを長時間占有するため，CPUの動作が遅くなる可能性がある．
+\section{デバイスドライバ}
+デバイスドライバとは，OSにおいてプリンターやマウス，キーボードなどの周辺機器を
+制御するためのソフトウェアである．略してドライバとも呼ばれる．
+デバイスドライバは，OSとハードウェアの間に位置し，OSがハードウェアを直接制御することを
+避けるための役割を果たす．
+デバイスドライバは，OSが提供するAPIを使用して，ハードウェアを制御する．
+デバイスドライバは，ハードウェアの種類や機能に応じて，異なるドライバが必要となる．
+例えば，プリンター用のドライバとマウス用のドライバは異なるものである．
+デバイスドライバは，OSのカーネルモードで動作することが多く，ハードウェアに直接アクセスすることができる．
+\subsection{デバイスドライバの種類}
+デバイスドライバには，以下のような種類がある．
+\subsubsection{キャラクタデバイスドライバ}
+キャラクタデバイスドライバは，1バイトずつデータを読み書きするデバイスを制御するためのドライバである．
+例えば，キーボードやマウスなどがキャラクタデバイスに該当する．
+\subsubsection{ブロックデバイスドライバ}
+ブロックデバイスドライバは，データをブロック単位で読み書きするデバイスを制御するためのドライバである．
+例えば，ハードディスクやUSBメモリなどがブロックデバイスに該当する．
+\subsubsection{ネットワークデバイスドライバ}
+ネットワークデバイスドライバは，ネットワークインターフェースを制御するためのドライバである．
+例えば，イーサネットカードやWi-Fiアダプタなどがネットワークデバイスに該当する．
+\section{仮想化の概念}
+仮想化とは，1台の物理的なコンピュータ上で複数の仮想的なコンピュータを動作させる技術である．本来はプログラムを一つしか動作させられないハードウェアであっても，プロセスに対してコンピュータの資源を複製したり抽象化
+例えばプロセッサのシステムISAをシステムコールへ抽象化し，ユーザISAとともにプロセスへ提供している．仮想化は仮想計算機を実現し，そこでOSを動かし，さらにそのOS上でプロセスを動作させることである．
+特に，VM上で動作するOSをゲストOSと呼ぶ．
+仮想化において問題となることとして，各デバイスは昨日とインターフェイスがともに固有であり，共通的な対処が困難であることや，OSは主記憶の全体を使用可能であると仮定して構築されていることである．
+\end{document}

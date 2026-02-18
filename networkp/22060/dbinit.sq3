@@ -1,0 +1,35 @@
+drop table if exists Products;
+create table Products (
+    id integer primary key,
+    name varchar(100),
+    unit_value integer,
+    unit varchar(5),
+    material varchar(300),
+    price integer
+);
+
+drop table if exists Materials;
+create table Materials (
+    id integer primary key,
+    name varchar(100),
+    unit_value integer,
+    unit_amount integer,
+    unit varchar(5),
+    price integer
+);
+
+insert into materials values (1, '小麦粉',10000,1, 'g', 3400);
+insert into materials values (2, '卵',100, 1, '個', 1900);
+insert into materials values (3, 'ベーキングパウダー',1000, 1, 'g', 450);
+insert into materials values (4, '砂糖',10000, 1, 'g', 1200);
+insert into materials values (5, 'バター',10000, 1, 'g', 12100);
+insert into materials values (6, '生クリーム',10, 1, 'L', 11000);
+insert into materials values (7, '牛乳',10, 1, 'L', 1980);
+insert into materials values (8, '苺',100, 1, '個', 4750);
+insert into materials values (9, 'アーモンド',5000, 1, 'g', 5600);
+insert into materials values (10, '板チョコ',5000, 1, 'g', 8500);
+
+insert into products values (1,  '苺ケーキ', 1, '個', '{"小麦粉":250,"卵":2,"ベーキングパウダー":2.5,"砂糖":50,"バター":50,"生クリーム":0.1,"牛乳":0.15,"苺":3}', 2000);
+insert into products values (2, 'スコーン', 10, '個', '{"小麦粉":200,"卵":1,"ベーキングパウダー":2,"バター":30,"生クリーム":0.05}', 100);
+insert into products values (3, 'アーモンドクッキー', 30, '個', '{"小麦粉":300,"卵":3,"ベーキングパウダー":1.5,"砂糖":150,"バター":150,"アーモンド":60}', 80);
+insert into products values (4, 'チョコマフィン', 12, '個', '{"小麦粉":250,"卵":1,"ベーキングパウダー":1.5,"砂糖":100,"バター":50,"牛乳":0.1,"板チョコ":50}', 200);
