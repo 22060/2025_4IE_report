@@ -1,0 +1,87 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage{amsmath,amssymb}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{listings}
+\usepackage{hyperref}
+
+\geometry{left=25mm,right=25mm,top=25mm,bottom=25mm}
+\setstretch{1.2}
+
+\title{Gaussの消去法とピボット選択}
+\author{学籍番号：22060 \\ 氏名：古城隆人}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{はじめに}
+連立一次方程式は、物理シミュレーション、回路解析、構造解析など多くの工学分野に現れる。
+これらを数値的に解く代表的な手法として、Gaussの消去法（Gaussian Elimination）がある。
+本レポートでは、Gaussの消去法の基本原理を説明し、数値計算における誤差問題とその対策としての
+ピボット選択について述べ、応用例および利点・欠点をまとめる。
+
+\section{Gaussの消去法の原理}
+$n$元連立一次方程式
+\[
+A\mathbf{x} = \mathbf{b}
+\]
+に対し、Gaussの消去法は行基本変形を用いて係数行列 $A$ を上三角行列に変換し、
+後退代入によって解を求める手法である。
+
+具体的には、
+\begin{enumerate}
+  \item 前進消去により下三角成分を消去する
+  \item 上三角行列に対して後退代入を行う
+\end{enumerate}
+という2段階から構成される。
+
+\section{数値誤差とピボット選択}
+実数を有限精度で扱う数値計算では、丸め誤差が避けられない。
+特にGaussの消去法では、消去過程で非常に小さな数で割り算を行うと、
+誤差が大きく増幅される危険がある。
+
+この問題を回避するために用いられるのが\textbf{ピボット選択}である。
+部分ピボット選択では、各列において絶対値が最大の成分をピボットとして選び、
+行を入れ替えてから消去を行う。
+これにより、数値的安定性が大きく向上する。
+
+\section{応用例}
+Gaussの消去法は以下のような分野で広く利用されている。
+\begin{itemize}
+  \item 電気回路解析における節点電圧法
+  \item 構造力学における剛性方程式の解法
+  \item 数値シミュレーションにおける線形化問題
+\end{itemize}
+特に行列サイズが中程度の場合には、実装が容易で計算効率も高い。
+
+\section{利点と欠点}
+\subsection{利点}
+\begin{itemize}
+  \item アルゴリズムが単純で理解しやすい
+  \item LU分解の基礎となる重要な手法である
+  \item 多くの数値計算ライブラリで標準的に用いられている
+\end{itemize}
+
+\subsection{欠点}
+\begin{itemize}
+  \item 計算量が $O(n^3)$ と大きい
+  \item ピボット選択を行わない場合、数値的に不安定
+  \item 大規模疎行列には不向き
+\end{itemize}
+
+\section{おわりに}
+Gaussの消去法は、連立一次方程式を解くための基本かつ重要な数値計算法である。
+特にピボット選択を適切に行うことで、数値誤差を抑えた安定な計算が可能となる。
+本手法は、より高度な数値線形代数手法を理解するための基礎としても重要である。
+
+\begin{thebibliography}{9}
+\bibitem{takasu}
+高須正和，
+「計算機実験：Gaussの消去法とピボット選択」，
+奈良女子大学，
+\url{https://gi.ics.nara-wu.ac.jp/~takasu/lecture/old/archives/H16-keisankijikken1-2.pdf}
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,985 @@
+\documentclass[a4paper,11pt]{ltjsarticle}
+% 数式
+\usepackage{amsmath,amsfonts}
+\usepackage{bm}
+% 画像
+\usepackage{graphicx}
+\usepackage{circuitikz}
+\usepackage{amsmath,amssymb}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage{tikz}
+\usepackage{askmaps}
+\usepackage{multirow}
+\usepackage{bigstrut}
+\usepackage{slashbox}
+\usepackage{rotating}
+\usepackage{listings}
+% 数式
+\usepackage{physics}
+\usepackage{mathtools}
+% 画像
+\usepackage{subcaption}
+% 表
+\usepackage{makecell}
+% その他
+\usepackage{url}
+\usepackage{ascmac}
+\usepackage{cases}
+\usepackage{here}
+\usepackage{upgreek}
+% 日本語対応
+\usepackage{luatexja}
+\usepackage{luatexja-fontspec}
+
+\AtBeginDocument{\RenewCommandCopy\qty\SI}
+
+
+\definecolor{commentgreen}{RGB}{0,200,0}
+\definecolor{eminence}{RGB}{120,80,250}
+\definecolor{weborange}{RGB}{255,165,0}
+\definecolor{frenchplum}{RGB}{10,150,200}
+\definecolor{commentgreen}{RGB}{0,200,0}
+\definecolor{eminence}{RGB}{120,80,250}
+\definecolor{weborange}{RGB}{255,165,0}
+\definecolor{frenchplum}{RGB}{10,150,200}
+
+\lstset{
+        language = {C},
+        basicstyle = \ttfamily\small,
+        keywordstyle=\color{eminence}\ttfamily\bfseries,
+        commentstyle=\color{commentgreen}\textit,
+    identifierstyle=\color{black}\ttfamily,
+        xleftmargin=.35in,
+        frame=lines,
+    showstringspaces=false,
+        numbers=left,
+        stepnumber = 1,
+        breaklines=true,
+        numberstyle = \ttfamily\normalsize,
+    tabsize=4,  
+        emph={int, int8_t, int16_t, int32_t, int64_t, uint8_t, uint16_t, uint32_t, uint64_t, char, double, float, unsigned, void, bool},
+        emphstyle={\color{blue}}, 
+        morekeywords={>, <, ., ;, +, -, *, /, !, =, ~},
+        breakindent = 10pt, 
+        framexleftmargin=10mm, 
+        columns=fixed,
+        basewidth=0.5em,
+        }
+
+% 特定のスタイル設定
+\lstdefinestyle{customtxt}{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{lightgray},
+  frame=single,
+  breaklines=true,
+  columns=fullflexible,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=4,
+}
+
+\newcommand{\fig}[4]{
+    \begin{figure}[htbp]
+      \centering
+      \includegraphics{./image/#1}
+      \caption{#2}
+      \label{fig:#3}
+    \end{figure}
+  }
+\begin{document}
+
+\section{目的}
+本実験では，これまでの実験により得られた知識を生かしてALUの設計を行い
+Gowin社製 GW1NR-9上にVerilogHDLで回路を構築する．
+そして，構築した回路についてテストベンチを行い，正常に動作をしているかについて確認する．
+また，追加機能としてプログラムカウンタやプログラムROM，また入力/出力機能を搭載したCPUの構築を行う．
+さらに追加機能として，コンパイラの実装を行い，疑似C言語で記述したプログラムを
+アセンブリに変換し，そのアセンブリから機械語に変換することで，CPU上で動作させる．
+\section{原理}
+本実験で構築するALU,CPUについて使用する原理について説明を行う．
+\subsection{ALU}
+ALUは算術論理演算装置と呼ばれるもので，CPUの中核をなす部分である．
+入力された任意のビット幅の信号に対して，演算を行い出力する装置であり，
+加算や減算，論理積や論理和などの演算を行うことができる．
+本実験では，16bit幅の演算を行うALUを構築すする．
+また，ALUの入力と出力においては，入力にA,B，出力に全部の演算結果を出し，ALUの前段と後段にALU用のセレクタを配置している．
+これにより，ALUの設計とマルチプレクサの設計を分け，デバッグを行いやすくする．
+\subsection{CPU}
+CPUは中央処理装置と呼ばれるもので，コンピュータの中核をなす部分である．
+入力された命令に対して，演算を行い出力する装置であり，ALUやメモリ，プログラムカウンタ(PC)や
+プログラムROMなどの構成要素からなる．
+本実験では，ALUに加えて，メモリやPC，プログラムROMを搭載したCPUを構築する．
+CPUの入力にクロック信号を入力し，クロックに合わせて演算結果の書き込みを行っている．
+\subsection{インストラクション}
+インストラクションはCPUが理解できる命令である．
+オペコードと呼ばれる命令の種類を表すビット列と，オペランドと呼ばれる引数を表すビット列から構成される．
+本実験では，オペコードを6bit，オペランドを10bitとすることで，16bit幅の命令を構成する．
+\subsection{オペコード}
+オペコードは命令の種類を表すビット列であり，CPUが理解できる命令の種類を表すものである．
+オペコードはCPUごとに異なり，CPUが理解できる命令の種類を表すものであり，
+命令セットアーキテクチャとして定義される．
+本実験では，ALUの演算の種類を表すオペコードを28種類定義した．
+\subsection{オペランド}
+オペランドは命令の引数を表すビット列であり，オペコードにより，何を表すかが変わる．
+例えばADDI命令では，オペランドはACCに足す即値を表し，
+ADDM命令では，オペランドはメモリの番号を表す．
+また，特殊命令としてjmp命令では，オペランドはジャンプ先のアドレスを表す．
+\subsection{手動/自動モード}
+本実験では追加機能との棲み分けとして，モード切替を行うことが出来るようになっている．
+手動モードでは，SW0 $\sim$ SW14とS2をインストラクションの入力とし，SW17をクロック源としている．
+そして，外部からの入力を受け付けず，またjmpなどの命令も使用できない．
+自動モードでは内部のプログラムROMに格納された命令を自動実行するモードであり，内部の27$[M\text{Hz}]$のクロックを使用している．
+\subsection{入力/出力}
+外部に接続しているポートを，内部のメモリと接続することにより，メモリの値を読むことにより，外部からの入力，
+またメモリに値を書き込むことにより外部への値の出力を可能にしている．
+これにより，CPUとポートを介してデータのやり取りができる．
+本実験では，自動モードの際にこの機能を使用できるようになっている．
+0番地にSW0 $\sim$ SW14とS2を接続し
+1番地にLED0 $\sim$ LED6を接続，また2番地に7セグメント表示モジュールを接続させている．
+これにより，2番地に値を書き込むと書き込んだ値が7セグメントLEDに4 bit * 4桁(16bit,16進数4桁)で表示される．
+\subsection{アセンブリ}
+アセンブリは機械語と一対一で対応する低水準言語である．
+機械語はCPUが直接理解できる命令であるが，人間にとっては理解しづらいものである．
+そのため，疑似C言語で記述したプログラムからアセンブリに変換を行うコンパイラの構築を行った．
+\subsection{コンパイラ}
+コンパイラは高水準言語で記述されたプログラムを低水準言語に変換するプログラムである．
+高水準言語は人間にとって理解しやすいものであるが，CPUが直接理解できるものではない．
+そして，if文やwhile文を実装するために，CMP命令群によるフラグ管理を実装し，条件分岐命令を実装した．
+これによりある程度複雑な命令も実行できるようになっている．
+本実験では例としてuint16\underline{~}t型の配列変数を用いた64bit幅のフィボナッチ数列を出力するプログラムを構築し，
+また入出力機能を使用して実際に動作することを確認する．
+\section{実験環境}
+表\ref{tab:zikken}に使用するソフトウェアとハードウェアについての実験環境を示す．
+\begin{table}[H]
+    \centering
+    \caption{実験環境}
+    \label{tab:zikken}
+    \begin{tabular}{|c|c|}
+        \hline
+        項目             & 内容                                   \\
+        \hline
+        FPGAボード        & Gowin社製 GW1NR-9                      \\
+        \hline
+        開発ソフトウェア       & Gowin\_V1.9.11.03 Education (64-bit) \\
+        \hline
+        シミュレーションソフトウェア & iverilog                             \\
+        \hline
+    \end{tabular}
+\end{table}
+\section{実験方法}
+本実験で行った実験手順を示す．
+\subsection{ブロック図(階層設計)}
+本実験で作成するものについて，仕様を決めてからブロック図を作成し，
+モジュール間の接続を明確にする．また，それぞれのモジュールについての動作についても仕様を決める．
+\subsection{HDLの作成}
+ブロック図をもとにHDLを作成する．本実験ではVerilogを用いてHDLを作成する．
+\subsection{シミュレーション}
+作成したHDLが正しく動作するかをテストベンチを作成し，シミュレーションを行い確認する．
+\subsection{FPGAへの書き込み}
+シミュレーションで正しく動作することが確認できたら，FPGAボードに書き込みを行い，シュミレーションと同じ動きをするか確認する．
+\subsection{動作確認}
+FPGAボードに書き込みを行った後，実際に動作確認を行う．
+\section{結果}
+実験方法を参照し，実験を行った．
+\subsection{ブロック図}
+図\ref{fig:block}に作成した回路のブロック図を示す．
+また，各モジュールの仕様について示す(トップモジュールから見た動作仕様であり，
+内部の動作については実装した後に後述する)．
+回路図中に書かれている黒で塗りつぶされている三角形については連接演算により信号を束ねたものを示している．
+\newpage
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.4\linewidth,angle=90]{./image/block_logical.drawio.png}
+    \caption{作成したCPUのブロック図}
+    \label{fig:block}
+\end{figure}
+\subsubsection{ALU}
+ALUは，CUにおける算術演算や論理演算の命令に対して，演算を行う装置であり，
+FPGAにつながっている7セグメントLEDが4つであったため，4bit * 4桁の16bit幅のALUとなった．
+出ryp国は前年全結果とフラグを出力している．また，このALUはクロックに同期しない組み合わせ回路である．
+ALUの入出力ピン仕様については表\ref{tab:alu}に示す．
+\begin{table}[H]
+    \centering
+    \caption{ALUの入出力ピン仕様}
+    \label{tab:alu}
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        ピン名                  & ビット幅 & 種類 & 説明             \\
+        \hline
+        iA                   & 16   & 入力 & 演算対象の1つ目       \\
+        \hline
+        iB                   & 16   & 入力 & 演算対象の2つ目       \\
+        \hline
+        oAdd\underline{~}y   & 16   & 出力 & 加算の結果          \\
+        \hline
+        oSub\underline{~}y   & 16   & 出力 & 減算の結果          \\
+        \hline
+        oAnd\underline{~}y   & 16   & 出力 & 論理積の結果         \\
+        \hline
+        oOr\underline{~}y    & 16   & 出力 & 論理和の結果         \\
+        \hline
+        oXor\underline{~}y   & 16   & 出力 & 排他的論理和の結果      \\
+        \hline
+        oNot\underline{~}y   & 16   & 出力 & 論理否定の結果        \\
+        \hline
+        oShl\underline{~}y   & 16   & 出力 & 左シフトの結果        \\
+        \hline
+        oShr\underline{~}y   & 16   & 出力 & 右シフトの結果        \\
+        \hline
+        oInc\underline{~}y   & 16   & 出力 & 増加の結果          \\
+        \hline
+        oDec\underline{~}y   & 16   & 出力 & 減少の結果          \\
+        \hline
+        oPassa\underline{~}y & 16   & 出力 & 入力Aをそのまま出力する結果 \\
+        \hline
+        oPassb\underline{~}y & 16   & 出力 & 入力Bをそのまま出力する結果 \\
+        \hline
+        oCarry               & 1    & 出力 & キャリーフラグ        \\
+        \hline
+        oZero                & 1    & 出力 & ゼロフラグ          \\
+        \hline
+        oOverflow            & 1    & 出力 & オーバーフローフラグ     \\
+        \hline
+    \end{tabular}
+\end{table}
+\subsubsection{ALU入力マルチプレクサ(ALU\underline{~}INPUT\underline{~}MUX)}
+ALU入力マルチプレクサは，ALUの前段に配置されるマルチプレクサであり，
+ALUの入力を切り替えるためのものである．内部にマルチプレクサを二種類搭載しており，
+それぞれALUの入力の1つ目と2つ目を切り替えるものである．
+一つ目の入力にはACCの値とオペランドの即値を選択できるようになっている．
+二つ目の入力ではメモリの値とACCの値と即値を選択できるようになっている．
+これにより，ALUの入力を柔軟に切り替えることができるようになっている．
+ALU入力マルチプレクサの入出力ピン仕様については表\ref{tab:alu_mux}に示す．
+また，入力に対するMUXの値とoA,oBの値の関係については表\ref{tab:alu_mux_value},表\ref{tab:alu_mux_value2}に示す．
+\begin{table}[H]
+    \centering
+    \caption{ALU入力マルチプレクサの入出力ピン仕様}
+    \label{tab:alu_mux}
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        ピン名                & ビット幅 & 種類 & 説明           \\
+        \hline
+        iACC               & 16   & 入力 & ACCの値        \\
+        \hline
+        iIMM               & 16   & 入力 & オペランドの即値     \\
+        \hline
+        iMEM               & 16   & 入力 & メモリの値        \\
+        \hline
+        iSel\underline{~}A & 1    & 入力 & ALUの入力1の選択信号 \\
+        \hline
+        iSel\underline{~}B & 2    & 入力 & ALUの入力2の選択信号 \\
+        \hline
+        oA                 & 16   & 出力 & ALUの入力1      \\
+        \hline
+        oB                 & 16   & 出力 & ALUの入力2      \\
+        \hline
+    \end{tabular}
+\end{table}
+\begin{table}[H]
+    \centering
+    \caption{ALU入力マルチプレクサの入力に対する出力(oA)の関係}
+    \label{tab:alu_mux_value}
+    \begin{tabular}{|c|c|}
+        \hline
+        iSel\underline{~}A & oAの値    \\
+        \hline
+        0                  & oA=iACC \\
+        \hline
+        1                  & oA=iIMM \\
+        \hline
+    \end{tabular}
+\end{table}
+\begin{table}[H]
+    \centering
+    \caption{ALU入力マルチプレクサの入力に対する出力(oB)の関係}
+    \label{tab:alu_mux_value2}
+    \begin{tabular}{|c|c|}
+        \hline
+        iSel\underline{~}B & oBの値    \\
+        \hline
+        00                 & oB=iACC \\
+        \hline
+        01                 & oB=iMEM \\
+        \hline
+        10                 & oB=iIMM \\
+        \hline
+    \end{tabular}
+\end{table}
+\subsubsection{ALU結果セレクタ(ALU\underline{~}sel)}
+ALU結果セレクタは，ALUの後段に配置されるマルチプレクサであり，ALUの出力を切り替えるためのものである．
+ALUの出力には加算や減算などの演算結果が出力されるが，ALU結果セレクタを用いることで，どの演算結果を出力するかを切り替えることができるようになっている．
+ALU結果セレクタの入出力ピン仕様については表\ref{tab:alu_sel}に示す．
+また，入力に対するMUXの値とoYの値の関係については表\ref{tab:alu_sel_value}に示す．
+% module ALU_sel(iAlu_Sel,iAdd_Y,iSub_Y,iAnd_Y,iOr_Y,iXor_Y,iNot_Y,iShl_Y,iShr_Y,iInc_Y,iDec_Y,iPassa_Y,iPassb_Y,oY);
+\begin{table}[H]
+    \centering
+    \caption{ALU結果セレクタの入出力ピン仕様}
+    \label{tab:alu_sel}
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        ピン名                  & ビット幅 & 種類 & 説明                 \\
+        \hline
+        iAlu\underline{~}Sel & 4    & 入力 & ALUの出力の選択信号        \\
+        \hline
+        iAdd\underline{~}Y   & 16   & 入力 & ALUの加算の結果          \\
+        \hline
+        iSub\underline{~}Y   & 16   & 入力 & ALUの減算の結果          \\
+        \hline
+        iAnd\underline{~}Y   & 16   & 入力 & ALUの論理積の結果         \\
+        \hline
+        iOr\underline{~}Y    & 16   & 入力 & ALUの論理和の結果         \\
+        \hline
+        iXor\underline{~}Y   & 16   & 入力 & ALUの排他的論理和の結果      \\
+        \hline
+        iNot\underline{~}Y   & 16   & 入力 & ALUの論理否定の結果        \\
+        \hline
+        iShl\underline{~}Y   & 16   & 入力 & ALUの左シフトの結果        \\
+        \hline
+        iShr\underline{~}Y   & 16   & 入力 & ALUの右シフトの結果        \\
+        \hline
+        iInc\underline{~}Y   & 16   & 入力 & ALUの増加の結果          \\
+        \hline
+        iDec\underline{~}Y   & 16   & 入力 & ALUの減少の結果          \\
+        \hline
+        iPassa\underline{~}Y & 16   & 入力 & ALUの入力Aをそのまま出力する結果 \\
+        \hline
+        iPassb\underline{~}Y & 16   & 入力 & ALUの入力Bをそのまま出力する結果 \\
+        \hline
+        oY                   & 16   & 出力 & 選択されたALUの演算結果      \\
+        \hline
+    \end{tabular}
+\end{table}
+\begin{table}[H]
+    \centering
+    \caption{ALU結果セレクタの入力に対する出力(oY)の関係}
+    \label{tab:alu_sel_value}
+    \begin{tabular}{|c|c|}
+        \hline
+        iAlu\underline{~}Sel & oYの値                    \\
+        \hline
+        0000                 & oY=iAdd\underline{~}Y   \\
+        \hline
+        0001                 & oY=iSub\underline{~}Y   \\
+        \hline
+        0010                 & oY=iAnd\underline{~}Y   \\
+        \hline
+        0011                 & oY=iOr\underline{~}Y    \\
+        \hline
+        0100                 & oY=iXor\underline{~}Y   \\
+        \hline
+        0101                 & oY=iNot\underline{~}Y   \\
+        \hline
+        0110                 & oY=iShl\underline{~}Y   \\
+        \hline
+        0111                 & oY=iShr\underline{~}Y   \\
+        \hline
+        1000                 & oY=iInc\underline{~}Y   \\
+        \hline
+        1001                 & oY=iDec\underline{~}Y   \\
+        \hline
+        1010                 & oY=iPassa\underline{~}Y \\
+        \hline
+        1111                 & oY=iPassb\underline{~}Y \\
+        \hline
+    \end{tabular}
+\end{table}
+\subsubsection{命令デコーダ(INST\_DECODER)}
+命令デコーダは，CPUの中で命令を解読する装置である．
+入力された命令からオペコードとオペランドを分離し，オペコードに応じて，
+ALUの入力マルチプレクサの選択信号やALU結果セレクタの選択信号を出力する．
+また，ALUの演算の種類に応じて，フラグの更新の有無や，メモリへの書き込みの有無なども出力する．
+そして，追加機能のために，プログラムカウンタの値の更新の有無や，メモリへのアクセスの有無なども出力する．
+命令デコーダの入出力ピン仕様については表\ref{tab:inst_decoder}に示す．
+また，オペコードに対応する出力の値の関係については，実装した後に後述する．
+% module INST_DECODER(iInstr,iPC,iACC,iCmpEq,iCmpLt,iCmpGt,oAlu_Sel,oAcc_We,oSel_A,oSel_B,oMem_We,oMem_Addr,oJmp_En,oJmp_Addr,oCmp_We);
+\begin{table}[H]
+    \centering
+    \caption{命令デコーダの入出力ピン仕様}
+    \label{tab:inst_decoder}
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        ピン名                   & ビット幅 & 種類 & 説明                    \\
+        \hline
+        iInstr                & 16   & 入力 & 命令                    \\
+        \hline
+        iPC                   & 10   & 入力 & プログラムカウンタの値           \\
+        \hline
+        iACC                  & 16   & 入力 & ACCの値                 \\
+        \hline
+        iCmpEq                & 1    & 入力 & CMP命令の等しいフラグ          \\
+        \hline
+        iCmpLt                & 1    & 入力 & CMP命令の小さいフラグ          \\
+        \hline
+        iCmpGt                & 1    & 入力 & CMP命令の大きいフラグ          \\
+        \hline
+        oAlu\underline{~}Sel  & 4    & 出力 & ALUの出力の選択信号           \\
+        \hline
+        oAcc\underline{~}We   & 1    & 出力 & ACCへの書き込み有無           \\
+        \hline
+        oSel\underline{~}A    & 1    & 出力 & ALU入力マルチプレクサの入力1の選択信号 \\
+        \hline
+        oSel\underline{~}B    & 2    & 出力 & ALU入力マルチプレクサの入力2の選択信号 \\
+        \hline
+        oMem\underline{~}We   & 1    & 出力 & メモリへの書き込み有無           \\
+        \hline
+        oMem\underline{~}Addr & 10   & 出力 & メモリのアドレス              \\
+        \hline
+        oJmp\underline{~}En   & 1    & 出力 & ジャンプ命令かどうか            \\
+        \hline
+        oJmp\underline{~}Addr & 10   & 出力 & ジャンプ先のアドレス            \\
+        \hline
+        oCmp\underline{~}We   & 1    & 出力 & CMP命令のフラグの更新有無        \\
+        \hline
+    \end{tabular}
+\end{table}
+\subsubsection{7セグメントLED表示器}
+7セグメントLED表示器は，FPGAにつながっている7セグメントLEDに値を表示する装置である．
+入力された値を16進数4桁で表示することができる．
+7セグメントLED表示器の入出力ピン仕様については表\ref{tab:7seg}に示す．
+\begin{table}[H]
+    \centering
+    \caption{7セグメントLED表示器の入出力ピン仕様}
+    \label{tab:7seg}
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        ピン名  & ビット幅 & 種類 & 説明                   \\
+        \hline
+        iClk & 1    & 入力 & ダイナミック点灯のためのクロック信号   \\
+        \hline
+        iD   & 16   & 入力 & 表示する値                \\
+        \hline
+        oSeg & 7    & 出力 & 7セグメントLEDのセグメントの制御信号 \\
+        \hline
+        oSel & 4    & 出力 & 7セグメントLEDの桁の制御信号     \\
+        \hline
+    \end{tabular}
+\end{table}
+\subsubsection{クロック選択マルチプレクサ}
+クロック選択マルチプレクサは，内部のクロックと外部のクロックを切り替えるためのマルチプレクサである．
+クロック選択マルチプレクサの入出力ピン仕様については表\ref{tab:clk_mux}に示す．
+また，入力に対するMUXの値と出力の関係については表\ref{tab:clk_mux_value}に示す．
+\begin{table}[H]
+    \centering
+    \caption{クロック選択マルチプレクサの入出力ピン仕様}
+    \label{tab:clk_mux}
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        ピン名    & ビット幅 & 種類 & 説明        \\
+        \hline
+        iClk27 & 1    & 入力 & 内部のクロック信号 \\
+        \hline
+        iClk   & 1    & 入力 & 外部のクロック信号 \\
+        \hline
+        iMode  & 1    & 入力 & モード選択信号   \\
+        \hline
+    \end{tabular}
+\end{table}
+\begin{table}[H]
+    \centering
+    \caption{クロック選択マルチプレクサの入力に対する出力の関係}
+    \label{tab:clk_mux_value}
+    \begin{tabular}{|c|c|}
+        \hline
+        iMode & 出力されるクロック信号 \\
+        \hline
+        0     & iClk27      \\
+        \hline
+        1     & iClk        \\
+        \hline
+    \end{tabular}
+\end{table}
+\subsubsection{7セグメントデータセレクタ}
+7セグメントデータセレクタは，7セグメントLED表示器の前段に配置されるマルチプレクサであり，7セグメントLED表示器の入力を切り替えるためのものである．
+7セグメントデータセレクタの入出力ピン仕様については表\ref{tab:7seg_sel}に示す．
+また，入力に対するMUXの値と出力の関係については表\ref{tab:7seg_sel_value}に示す．
+% Sel_WORD u_sel_word(
+%     .iA(w_instr),
+%     .iB(w_instr), // 即値も表示できるように
+%     .iC(w_mem_addr), // メモリアドレスも表示
+%     .iD(w_acc_out), // アキュムレータの内容も表示
+%     .iSw({iSW18, ~iBtn[0]}), // スイッチで表示内容切替 //2bit
+%     .oOut(w_display_data_sel) // 7セグ表示用ワイヤに接続
+% );
+\begin{table}[H]
+    \centering
+    \caption{7セグメントデータセレクタの入出力ピン仕様}
+    \label{tab:7seg_sel}
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        ピン名  & ビット幅 & 種類 & 説明              \\
+        \hline
+        iA   & 16   & 入力 & 命令              \\
+        \hline
+        iB   & 16   & 入力 & 命令              \\
+        \hline
+        iC   & 10   & 入力 & インデックスレジスタ      \\
+        \hline
+        iD   & 16   & 入力 & アキュムレータの内容      \\
+        \hline
+        iSw  & 2    & 入力 & 表示内容選択スイッチ      \\
+        \hline
+        oOut & 16   & 出力 & 7セグメントLED表示用データ \\
+        \hline
+    \end{tabular}
+\end{table}
+\begin{table}[H]
+    \centering
+    \caption{7セグメントデータセレクタの入力に対する出力の関係}
+    \label{tab:7seg_sel_value}
+    \begin{tabular}{|c|c|}
+        \hline
+        iSw & oOutの値     \\
+        \hline
+        0x  & 命令         \\
+        \hline
+        10  & インデックスレジスタ \\
+        \hline
+        11  & アキュムレータの内容 \\
+        \hline
+    \end{tabular}
+\end{table}
+\subsubsection{命令入力マルチプレクサ}
+命令入力マルチプレクサは，CPUの命令の入力を切り替えるためのマルチプレクサである．
+命令入力マルチプレクサの入出力ピン仕様については表\ref{tab:inst_mux}に示す．
+また，入力に対するMUXの値と出力の関係については表\ref{tab:inst_mux_value}に示す．
+
+% wire [15:0] w_instr = iS[15] ? {~iBtn[1], iS[14:0]} : w_instr_rom;
+\begin{table}[H]
+    \centering
+    \caption{命令入力マルチプレクサの入出力ピン仕様}
+    \label{tab:inst_mux}
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        ピン名    & ビット幅 & 種類 & 説明              \\
+        \hline
+        iSw    & 16   & 入力 & スイッチ入力          \\
+        \hline
+        iBtn   & 2    & 入力 & ボタン入力           \\
+        \hline
+        iROM   & 16   & 入力 & プログラムROMからの命令入力 \\
+        \hline
+        oInstr & 16   & 出力 & 選択された命令         \\
+        \hline
+    \end{tabular}
+\end{table}
+\subsection{HDLの作成}
+トップモジュールから見た動作仕様に基づき，各モジュールの HDL を作成した．各モジュール
+のプログラムとその説明を以下に示す．
+\subsubsection{ALU}
+ALUのHDLコードリストをリスト\ref{code:alu}に示す．
+入力された信号A,Bについて組み合わせ回路で演算を行い，演算結果を出力する．
+また，演算の種類に応じて，キャリーフラグやゼロフラグ，オーバーフローフラグを出力する．
+\lstinputlisting[linerange={373-388},caption={ALUのHDLコードリスト},label={code:alu}]{./main.v} %ALUのコードリスト
+\subsubsection{ALU\_INPUT\_MUX}
+ALU\_INPUT\_MUXのHDLコードリストをリスト\ref{code:alu_input_mux}に示す．
+iSel\_AとiSel\_Bの値に応じて，function文内部のcase文でALUの入力oA,oBの値を切り替えている．
+\lstinputlisting[linerange={446-488},caption={ALU入力マルチプレクサのHDLコードリスト},label={code:alu_input_mux}]{./main.v} %ALU入力マルチプレクサのコードリスト
+\subsubsection{ALU\_sel}
+ALU\_selのHDLコードリストをリスト\ref{code:alu_result_sel}に示す．
+iAlu\_Selの値に応じて，function文内部のcase文でALUの出力oYの値を切り替えている．
+\lstinputlisting[linerange={390-444},caption={ALU結果セレクタのHDLコードリスト},label={code:alu_result_sel}]{./main.v} %ALU結果セレクタのコードリスト
+\subsubsection{命令デコーダ}
+命令デコーダのHDLコードリストをリスト\ref{code:inst_decoder}に示す．
+入力された命令をオペコードとオペランドに分割し，
+オペコードに応じてALUの入力マルチプレクサの選択信号やALU結果セレクタの選択信号，
+またACCやMEM，ジャンプの有無を示すイネーブル信号や即値かアドレスも出力している．
+jmp命令に対しては，フラグを読み込むことにより，次のプログラムカウンタの値を指定できるようになっている．
+\lstinputlisting[linerange={490-700},caption={命令デコーダのHDLコードリスト},label={code:inst_decoder}]{./main.v} %命令デコーダのコードリスト
+\subsubsection{7セグメントLED表示器}
+7セグメントLED表示器のHDLコードリストをリスト\ref{code:seven_seg_display}に示す．
+前回の課題で作ったモジュールを流用しており，
+それらのモジュールを配線するためのモジュールがSevenSegmentモジュールである．
+入力された値を16進数4桁で表示するために，4bitごとに値を切り出し，
+それぞれの値に応じて7セグメントLEDのセグメントの制御信号を出力している．
+また，ダイナミック点灯のために，入力されたクロック信号に応じて，7セグメントLEDの桁の制御信号を切り替えている．
+\lstinputlisting[linerange={172-186,244-345},caption={7セグメントLED表示器のHDLコードリスト},label={code:seven_seg_display}]{./main.v} % 7セグメントLED表示器のコードリスト
+\subsubsection{クロック選択マルチプレクサ}
+クロック選択マルチプレクサのHDLコードリストをリスト\ref{code:clk_mux}に示す．
+手動モードと自動モードの切り替えスイッチであるiS[15]の値により，クロックを選択している．
+三項演算子を用いて，自動モードでは内部クロック，手動モードではiClk(SW17)と接続するようになっている
+\lstinputlisting[linerange={37-37},caption={クロック選択マルチプレクサのHDLコードリスト},label={code:clk_mux}]{./main.v} % クロック選択マルチプレクサのコードリスト
+\subsubsection{7セグメントデータセレクタ}
+7セグメントデータセレクタのHDLコードリストをリスト\ref{code:7seg_sel}に示す．
+表示内容選択スイッチであるiSwの値に応じて，function文内部のcase文で出力される値を切り替えている．
+課題の内容がiSwの2bit目が0のときは1bit目がドントケアであったため，iSwの2bit目が0のときは命令を表示するようにしている．
+\lstinputlisting[linerange={187-211},caption={7セグメントデータセレクタのHDLコードリスト},label={code:7seg_sel}]{./main.v} % 7セグメントデータセレクタのコードリスト
+\subsubsection{命令入力マルチプレクサ}
+命令入力マルチプレクサのHDLコードリストをリスト\ref{code:inst_input_mux}に示す．
+命令入力マルチプレクサは，手動モードと自動モードの切り替えスイッチであるiS[15]の値に応じて，入力される命令を切り替えるものである．
+iS[15]が0のときはプログラムROMからの命令入力を出力し，iS[15]が1のときは連接演算により，S2を15bit，S14~0を命令の14~0bitとする命令入力を出力するようになっている．
+\lstinputlisting[linerange={33-33},caption={命令入力マルチプレクサのHDLコードリスト},label={code:inst_input_mux}]{./main.v} % 命令入力マルチプレクサのコードリスト
+\subsection{トップモジュール(MAIN)}
+すべての機能を統合させるためのトップモジュールMAIのHDLコードリストをリスト\ref{code:main}に示す．
+トップモジュールでは，クロック選択マルチプレクサや命令入力マルチプレクサ，7セグメントデータセレクタなどのモジュールをインスタンス化し，
+それらを配線している．
+\lstinputlisting[linerange={-171},caption={トップモジュールMAINのHDLコードリスト},label={code:main}]{./main.v} % MAINのコードリスト
+\subsection{シミュレーション}
+作成したHDLが正しく動作するかを確認するために，テストベンチを作成し，シミュレーションを行った．
+テストベンチとして作成したコードをリスト\ref{code:testbench}に示す．
+このテストベンチでは，手動入力モードのテストベンチを行っている．
+自動モードではフィボナッチ数列を求めるプログラムが自動で入っているため，CPUのシミュレーションには向かない．
+よって，手動モードで命令を入力するテストベンチを作成した．シミュレーションの結果を図\ref{fig:sim}に示す．
+\lstinputlisting[caption={テストベンチのHDLコードリスト},label={code:testbench}]{./main_tb.v}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.4\linewidth,angle=90]{./image/sim.png}
+    \caption{シミュレーションの結果}
+    \label{fig:sim}
+\end{figure}
+各シミュレーション結果について，各命令ごとに解析を行い，実装が出来ているかについて確認を行う．
+\subsubsection{LDI命令(5015)}
+最初のクロックの立ち上がりの時，w\_instrに5015が入力されている．
+この命令は即値をACCにロードする命令であり，
+クロックの立ち上がりエッジに合わせてACCに0x15がロードされていることがわかる．
+\subsubsection{ADDI命令(1003)}
+次のクロックの立ち上がりの時，w\_instrに1003が入力されている．
+この命令は即値をACCに加算する命令であり，
+クロックの立ち上がりエッジに合わせてACCにALUの演算結果である0x18がloadされていることがわかる．
+\subsubsection{SUBI命令(1404)}
+次のクロックの立ち上がりの時，w\_instrに1404が入力されている．
+この命令は即値をACCから減算する命令であり，
+クロックの立ち上がりエッジに合わせてACCにALUの演算結果である0x14がloadされていることがわかる．
+\subsubsection{ANDI命令(180F)}
+次のクロックの立ち上がりの時，w\_instrに180Fが入力されている．
+この命令は即値とACCの論理積をACCにロードする命令であり，
+クロックの立ち上がりエッジに合わせてACCに0x14と0x0Fの論理積である0x04がloadされていることがわかる．
+\subsubsection{ORI命令(1C02)}
+次のクロックの立ち上がりの時，w\_instrに1C02が入力されている．
+この命令は即値とACCの論理和をACCにロードする命令であり，
+クロックの立ち上がりエッジに合わせてACCに0x04と0x02の論理和である0x06がloadされていることがわかる．
+\subsubsection{XORI命令(2007)}
+次のクロックの立ち上がりの時，w\_instrに2007が入力されている．
+この命令は即値とACCの排他的論理和をACCにロードする命令であり，
+クロックの立ち上がりエッジに合わせてACCに0x06と0x07の排他的論理和である0x01がloadされていることがわかる．
+\subsubsection{INC命令(4400)}
+次のクロックの立ち上がりの時，w\_instrに4400が入力されている．
+この命令はACCの値を1増加させる命令であり，
+クロックの立ち上がりエッジに合わせてACCに0x01を1増加させた値である0x02がloadされていることがわかる．
+\subsubsection{DEC命令(4800)}
+次のクロックの立ち上がりの時，w\_instrに4800が入力されている．
+この命令はACCの値を1減少させる命令であり，
+クロックの立ち上がりエッジに合わせてACCに0x02を1減少させた値である0x01がloadされていることがわかる．
+\subsubsection{SHL命令(3C00)}
+次のクロックの立ち上がりの時，w\_instrに3C00が入力されている．
+この命令はACCの値を左シフトする命令であり，
+クロックの立ち上がりエッジに合わせてACCに0x01を左シフトした値である0x02がloadされていることがわかる．
+\subsubsection{SHR命令(4000)}
+次のクロックの立ち上がりの時，w\_instrに4000が入力されている．
+この命令はACCの値を右シフトする命令であり，
+クロックの立ち上がりエッジに合わせてACCに0x02を右シフトした値である0x01がloadされていることがわかる．
+\subsubsection{NOT命令(3800)}
+次のクロックの立ち上がりの時，w\_instrに3800が入力されている．
+この命令はACCの値を論理否定する命令であり，
+クロックの立ち上がりエッジに合わせてACCに0x01を論理否定した値である0xFFFEがloadされていることがわかる．
+\subsubsection{STORE命令(5408)}
+次のクロックの立ち上がりの時，w\_instrに5408が入力されている．
+この命令はACCの値をメモリにストアする命令であり，
+クロックの立ち上がりエッジに合わせてメモリのアドレス0x08にACCの値である0xFFFEがストアされている．
+ストア結果については次のクロックであるLOAD命令のシミュレーションで確認する．
+\subsubsection{LOAD命令(4C08)}
+次のクロックの立ち上がりの時，w\_instrに4C08が入力されている．
+この命令はメモリの値をACCにロードする命令であり，
+クロックの立ち上がりエッジに合わせて
+ACCにメモリのアドレス0x08にストアされている値である0xFFFEがロードされていることがわかる．
+次のクロックでは0x3FFとのANDI命令をしており，ACCは0x3FFとの論理積である0x3FEがロードされている．
+また，ストア命令(5409)，LDI(5001)命令が実行されており，メモリの0x09に0x3FEがloadされ，ACCには1が代入されている．
+\subsubsection{ADDM命令(2409)}
+次のクロックの立ち上がりの時，w\_instrに2409が入力されている．
+この命令はメモリの値をACCに加算する命令であり，
+クロックの立ち上がりエッジに合わせてACCにALUの演算結果である0x3FFがloadされていることがわかる．
+\subsubsection{SUBM命令(2809)}
+次のクロックの立ち上がりの時，w\_instrに2809が入力されている．
+この命令はメモリの値をACCから減算する命令であり，
+クロックの立ち上がりエッジに合わせてACCから0x3FEを減算した値である0x01がloadされていることがわかる．
+\subsubsection{ANDM命令(2C09)}
+次のクロックの立ち上がりの時，w\_instrに2C09が入力されている．
+この命令はメモリの値とACCの論理積をACCにロードする命令であり，
+クロックの立ち上がりエッジに合わせてACCに0x01と0x3FEの論理積である0x00がloadされていることがわかる．
+\subsubsection{ORM命令(3009)}
+次のクロックの立ち上がりの時，w\_instrに3009が入力されている．
+この命令はメモリの値とACCの論理和をACCにロードする命令であり，
+クロックの立ち上がりエッジに合わせてACCに0x01と0x3FEの論理和である0x3FEがloadされていることがわかる．
+\subsubsection{XORM命令(3409)}
+次のクロックの立ち上がりの時，w\_instrに3409が入力されている．
+この命令はメモリの値とACCの排他的論理和をACCにロードする命令であり，
+クロックの立ち上がりエッジに合わせてACCに0x3FEと0x3FEの排他的論理和である0x00がloadされていることがわかる．
+\subsubsection{CMPI命令(5800)}
+次のクロックの立ち上がりの時，w\_instrに5800が入力されている．
+この命令は即値とACCを比較する命令であり，
+クロックの立ち上がりエッジに合わせてCMP命令のフラグであるoLED[5:3]が変化している．
+oLED[5]はeqフラグであり，0x0と0x0の比較結果が等しいことがわかる．
+次のクロックではLDI命令(5005)が実行されており，ACCに0x05がロードされている．
+\subsubsection{CMPI命令(5807)}
+次のクロックの立ち上がりの時，w\_instrに5807が入力されている．
+この命令は即値とACCを比較する命令であり，
+クロックの立ち上がりエッジに合わせてCMP命令のフラグであるoLED[5:3]が変化している．
+oLED[4]はltフラグであり，0x5と0x7の比較結果が0x5の方が小さいことがわかる．
+\subsubsection{CMPI命令(5803)}
+次のクロックの立ち上がりの時，w\_instrに5803が入力されている．
+この命令は即値とACCを比較する命令であり，
+クロックの立ち上がりエッジに合わせてCMP命令のフラグであるoLED[5:3]が変化している．
+oLED[3]はgtフラグであり，0x5と0x3の比較結果が0x5の方が大きいことがわかる．
+また，次にSTORE命令(540A)が実行されており，メモリのアドレス0x0Aに0x05がストアされている．
+\subsubsection{CMPM命令(5C0A)}
+次のクロックの立ち上がりの時，w\_instrに5C0Aが入力されている．
+この命令はメモリの値とACCを比較する命令であり，
+クロックの立ち上がりエッジに合わせてCMP命令のフラグであるoLED[5:3]が変化している．
+oLED[5]はeqフラグであり，アドレス0xAの値0x05とACCの値0x05の比較結果が等しいことがわかる．
+\subsubsection{NOP命令(0000)}
+次のクロックの立ち上がりの時，w\_instrに0000が入力されている．
+この命令は何もしない命令であり，クロックの立ち上がりエッジに合わせてCPUの状態が変化していないことがわかる．
+\subsection{FPGAへの書き込み}
+シミュレーション結果により，CPUの手動モードでの実装が正しく，
+命令理解やメモリへのストア，また各種演算に対するマルチプレクサの動作が正しいことが確認できたため，
+FPGAボードへの書き込みを行った．
+また，設定したピン番号と信号名の対応表をGowinのソフトウェアにより生成されるファイル形式(.cst)
+をリスト\ref{code:cst}に示す．また，そこからピンの割り当てを示したものを表
+\ref{tab:pin}に示す．
+\lstinputlisting[caption={ピン番号と信号名の対応表},label={code:cst}]{./ALU.cst} % ピン番号と信号名の対応表のコードリスト
+\begin{table}[H]
+    \centering
+    \caption{ピン番号と信号名の対応表}
+    \label{tab:pin}
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        ピン番号 & 信号名  &ピン番号 & 信号名  \\
+        \hline
+        52       & iClk27   &
+        32       & iClk     \\
+        29       & iS[15]   &
+        30       & iS[14]   \\
+        33       & iS[13]   &
+        34       & iS[12]   \\
+        40       & iS[11]   &
+        35       & iS[10]   \\
+        41       & iS[9]    &
+        42       & iS[8]    \\
+        51      & iS[7]    &
+        53      & iS[6]    \\
+        54      & iS[5]    &
+        55      & iS[4]    \\
+        56      & iS[3]    &
+        57      & iS[2]    \\
+        68      & iS[1]    &
+        69      & iS[0]    \\
+        10      & oLED[0]   &
+        11      & oLED[1]   \\
+        13      & oLED[2]   &
+        14      & oLED[3]   \\
+        15      & oLED[4]   &
+        16      & oLED[5]   \\
+        75      & oP[0]     &
+        74      & oP[1]     \\
+        73      & oP[2]     &
+        72      & oP[3]     \\
+        71      & oP[4]     &
+        70      & oP[5]     \\
+        48      & oP[6]     &
+        49      & oP[7]     \\
+        83      & oD[0]     &
+        84      & oD[1]     \\
+        85      & oD[2]     &
+        86      & oD[3]     \\
+        4      & iBtn[0]   &
+        3      & iBtn[1]   \\
+        31      & iSW18    & & \\
+        \hline
+
+    \end{tabular}
+\end{table}
+\subsection{動作確認}
+FPGAへの書き込み後，CPUが正しく動作するかを確認するために，自動モードでCPUを動作させた．
+自動モードで使用したプログラムはコンパイラを用いて生成したものであり，追加機能であるため本章では
+解説を行わずに，動作していることを確認することに留める．ROMに保存したプログラムはリスト\ref{code:program}に示す．
+このプログラムでは，PCが8から9になる動作を見ると，7をACCにロードし，それをメモリのアドレス1にストアしていることがわかる．
+そのため，MEM[1]に接続しているoLEDの出力が0x07になっており，ここまでのプログラムが正常に動作していることがわかる．そのほかのコードについては規模が大きいため，解説は行わないが，自動実行がうまくいっていることはわかる．
+\begin{lstlisting}
+    module PROG_ROM(iAddr, oInstr);
+    input  [9:0] iAddr;
+    output [15:0] oInstr;
+
+    function automatic [15:0] prog_rom_f;
+        input [9:0] addr;
+        reg [15:0] oInstr;
+        begin
+            oInstr = 16'h0000;
+            case (addr)
+                            10'd0: oInstr = 16'h5000; // LDI 0
+            10'd1: oInstr = 16'h540A; // STORE 10
+            10'd2: oInstr = 16'h5000; // LDI 0
+            10'd3: oInstr = 16'h540B; // STORE 11
+            10'd4: oInstr = 16'h5000; // LDI 0
+            10'd5: oInstr = 16'h540C; // STORE 12
+            10'd6: oInstr = 16'h5000; // LDI 0
+            10'd7: oInstr = 16'h540D; // STORE 13
+            10'd8: oInstr = 16'h5007; // LDI 7
+            10'd9: oInstr = 16'h5401; // STORE 1
+            // ~~~ 中略 ~~~
+            10'd384: oInstr = 16'hFC00; // HALT
+                default: oInstr = 16'h0000; // NOP
+            endcase
+            prog_rom_f = oInstr;
+        end
+    endfunction
+
+    assign oInstr = prog_rom_f(iAddr);
+endmodule
+\end{lstlisting}
+\section{考察}
+本実験で得られた結果をもとに，CPUの設計や実装に関する考察を行う．
+\subsection{設計について}
+今回はALUの設計からCPUの設計まで行ったが，途中設計の変更を行おうとした場合，帰るところが多く，最初から一貫した
+仕様を決めてから設計しないと，いらない機構を実装してしまったり，逆に必要な機構が抜けてしまったりすることがわかった．
+そのため，行いたい機能から行いたい命令，そして必要な機構という順番で考え，一度次のステップを行ったら戻らない決意が必要であると感じた．
+\subsection{実装について}
+CPUの実装においては，ALUの設計やデコーダの設計について，詳しく行ってからだったので，
+比較的スムーズに行うことが出来た．しかし途中でプログラムROMの追加やPCの追加，またコンパイラの追加によるCMP命令/フラグ群の実装など，
+イレギュラーが発生し，その都度設計を変更する必要があった．
+特に，PCの追加は命令デコーダの設計を大幅に変更する必要があったため，設計の段階でPCの追加も考慮しておくべきだったと感じた．
+\subsection{シミュレーションについて}
+シミュレーションにおいては，シミュレーションの結果の解析に時間がかかった．
+結果を確認する際，オペコードの値が6bitであったため，16bitのうちの上位6bitを抜き出してオペコードとオペランドを
+比較するのが大変だった．
+\section{報告事項}
+課題の報告事項について，レポートに記載できなかった項目を本章で記載する．
+\subsection{設計したALUの演算の種類とそれぞれの詳細，バス幅}
+設計したALUの演算の種類とそれぞれの詳細，バス幅については表\ref{tab:alu}に示す．
+\begin{table}[H]
+    \centering
+    \caption{設計したALUの演算の種類とそれぞれの詳細，バス幅とオペコード}
+    \label{tab:alu}
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+         オペコード&演算の種類 & 詳細 & バス幅  \\
+        \hline
+        0x00 & NOP & 何もしない & 16bit \\
+        \hline
+        0x04 & ADDI & 即値をACCに加算 & 16bit \\
+        \hline
+        0x05 & SUBI & 即値をACCから減算 & 16bit \\
+        \hline
+        0x06 & ANDI & 即値とACCの論理積をACCにロード & 16bit \\
+        \hline
+        0x07 & ORI & 即値とACCの論理和をACCにロード & 16bit \\
+        \hline
+        0x08 & XORI & 即値とACCの排他的論理和をACCにロード & 16bit \\
+        \hline
+        0x09 & ADDM & メモリの値をACCに加算 & 16bit \\
+        \hline
+        0x0A & SUBM & メモリの値をACCから減算 & 16bit \\
+        \hline
+        0x0B & ANDM & メモリの値とACCの論理積をACCにロード & 16bit \\
+        \hline
+        0x0C & ORM & メモリの値とACCの論理和をACCにロード & 16bit \\
+        \hline
+        0x0D & XORM & メモリの値とACCの排他的論理和をACCにロード & 16bit \\
+        \hline
+        0x0E & NOT & ACCの値を論理否定 & 16bit \\
+        \hline
+        0x0F & SHL & ACCの値を左シフト & 16bit \\
+        \hline
+        0x10 & SHR & ACCの値を右シフト & 16bit \\
+        \hline
+        0x11 & INC & ACCの値を1増加 & 16bit \\
+        \hline
+        0x12 & DEC & ACCの値を1減少 & 16bit \\
+        \hline
+        0x13 & LOAD & メモリの値をACCにロード & 16bit \\
+        \hline
+        0x14 & LDI & 即値をACCにロード & 16bit \\
+        \hline
+        0x15 & STORE & ACCの値をメモリにストア & 16bit \\
+        \hline
+        0x16 & COMPI & 即値とACCを比較 & 16bit \\
+        \hline
+        0x17 & COMPM & メモリの値とACCを比較 & 16bit \\
+        \hline
+        0x18 & JMP & ジャンプ & 16bit \\
+        \hline
+        0x19 & BEQ & eqフラグが立っているときにジャンプ & 16bit \\
+        \hline
+        0x1A & BNE & eqフラグが立っていないときにジャンプ & 16bit \\
+        \hline
+        0x1B & BLT & ltフラグが立っているときにジャンプ & 16bit \\
+        \hline
+        0x1C & BGT & gtフラグが立っているときにジャンプ & 16bit \\
+        \hline
+        0x1D & JZERO & ACCの値が0のときにジャンプ & 16bit \\
+        \hline
+        0x3F & HALT & プログラムの停止 & 16bit \\
+        \hline
+    \end{tabular}
+\end{table}
+\newpage
+\subsection{作成した回路の操作方法}
+レポート内で度々モード切替などが出ているが，情報が統合されていないため，本章で情報の統合を行う．
+\subsection{自動モード}
+自動モードでは，内蔵されているプログラムがCPUにより順次内部クロックにより動作する．
+内部のプログラムではスイッチとボタンによる入力をメモリのアドレスを読むことにより実装している．
+そのため今回実装したフィボナッチ数列を求めるプログラムではスイッチ入力機能のテストを兼ねて，
+スイッチの値を読んでいる．数を求めるとwhile文に入り，このwhile文の終了判定では，SW1の入力が切り替わったら終了するようになっている．
+そのため，SW1の値を切り替えるごとに次のフィボナッチ数列の数を求めてくれる．そして，プログラム内で指定した回数に達した場合か，スイッチが変化してないタイミングではSW2とSW3の値により，
+フィボナッチ数列を求めている配列のインデックスが指定できるようになっており，インデックスを変化させるとそれに応じた中身がMEM[2]に書き込まれる．MEM[2]はSevenSegmentと接続しているため，
+そのまま配列の中身が16進数で表示される．
+\subsection{手動モード}
+手動モードでは，SW17をクロックとして命令を入力することができる．
+SW17をクロックとして命令を入力するためには，SW15を1にする必要がある．
+SW15を1にすることにより，命令入力マルチプレクサがプログラムROMからの命令入力からSWからの命令入力に切り替わる．
+SWからの命令入力は，S2を15bit，S14~0を命令の14~0bitとする命令入力である．
+また，このときの7セグメントLEDは課題の要件通りの動作になっており，ACCの内容を表示しているときにのみ，CPU内部の6種類のレジスタの値をLED出力で確認することが出来る．
+この6種類のフラグは，COM命令群で使用する3つのレジスタと，オーバーフロー/キャリー,ゼロフラグである．
+\section{追記}
+レポートの内容として書ききれなかった追加機能についてこの章に示す．
+\subsection{コンパイラ}
+疑似C言語のソースファイルをアセンブリに変換するコンパイラをPythonで実装した．
+コンパイラのプログラムをリスト\ref{code:compiler}に示す．また，ASMを機械語に変換するプログラムをリスト\ref{code:asm2bin}に示す．
+本CPUは命令語長が16bitであり，命令は「オペコード6bit＋オペランド10bit（即値またはメモリアドレス）」で構成される．そのため，C$\rightarrow$ASM変換では，最終的に10bit範囲に収まる即値・アドレスを生成し，分岐命令はラベルを用いて記述できる形式のアセンブリを出力する．
+
+
+\subsubsection{前処理（簡易プリプロセス）}
+完全なCプリプロセッサではないが，本実験に必要な範囲で前処理を行い，後段の解析を簡単化している．主な処理は以下の通りである．
+\begin{itemize}
+    \item \texttt{\#include "..."}：ソースファイルのディレクトリを基準としてローカルヘッダを展開する．
+    \item \texttt{\#define}（数値定数）：\texttt{0x..}，\texttt{0b..}，10進数の数値マクロを読み取り，定数として扱う．
+    \item \texttt{\#pragma mem}：識別子とメモリアドレスの対応（メモリマップ）を固定できる．右辺は数値または\texttt{\#define}マクロ名を許可する．
+    \item コメント除去：\texttt{//} および \texttt{/* */} を除去する．
+    \item \texttt{struct} の簡易展開：\texttt{struct T \{ a; b; \};} と \texttt{struct T var;} を解析し，\texttt{var.a} を \texttt{var\_\_a} のような識別子に置換する．フィールドは連続アドレスに割り当てる．
+    \item \texttt{malloc(N)}：\texttt{N} が整数リテラルのとき，コンパイル時に連続領域を確保し，呼び出しを先頭アドレスの数値へ置換する．
+    \item \texttt{main()} 抽出：\texttt{main()} が存在する場合，\texttt{\{...\}} 内のみを抽出してコンパイル対象とする．
+\end{itemize}
+
+\subsubsection{メモリ割当（メモリマップ＋自動割当）}
+本CPUはレジスタ数が限られ，変数は主にメモリへ\texttt{LOAD/STORE}することで扱う．よってコンパイル時に「識別子$\rightarrow$番地」の割当が必要となる．本実装では，ユーザ指定と自動割当を併用している．
+\begin{itemize}
+    \item ユーザ指定：\texttt{--map}で与えるJSON，または\texttt{\#pragma mem}で固定番地を指定する．
+    \item 自動割当：ソース中に現れる変数名・配列名を走査し，未割当のものへ空き番地を割り当てる．配列は「観測された最大の定数添字$+1$」を長さとし，連続領域を確保する．
+    \item 予約番地の保護：入出力に用いる番地など，システム予約領域へ一般変数が割り当てられないよう検査を行う．
+\end{itemize}
+
+\subsubsection{字句解析・構文解析とコード生成}
+前処理後のソースは字句解析（Lexer）によりトークン列へ変換し，構文解析（Parser）により抽象構文木（AST）を生成する．その後，コード生成器がASTを走査し，アセンブリ命令列へと展開する．
+算術・論理演算は，ACCを中心とした計算手順へ分解して\texttt{ADDI/ADDM}等の命令列へ落とし込む．
+また，if文やwhile文などの制御構造は，\texttt{CMP}系命令で比較結果フラグを更新し，\texttt{BEQ/BNE/BLT/BGT}等の分岐命令でラベルへジャンプすることで実現する．
+
+\lstinputlisting[caption={コンパイラのPythonコードリスト},label={code:compiler}]{../tools/c_compiler.py} % コンパイラのコードリスト
+\lstinputlisting[caption={ASMを機械語に変換するPythonコードリスト},label={code:asm2bin}]{../tools/assembler.py} % ASMを機械語に変換するコードリスト
+\subsection{マシン語に変換したcファイルについて}
+コンパイラを用いて変換したcファイルをリスト\ref{code:program}に示す．
+このプログラムでは，最初に配列の初期化を行い，led変数に7を代入している．このプログラムからマシン語への変換は前述のPROG\_ROMのコードを見ることにより，しっかりと変換が行われていることがわかる．
+そして，自動モードでこのプログラムを走らせた結果，想定通りの挙動を行っていることが確認できたため，自作CPUの命令セットアーキテクチャを基にコンパイラを用いて，簡単なC言語のプログラムを動作させることが出来たといえる．
+そして入出力機能においてもメモリを予約し，直で接続することにより実現させることが出来た．
+しかしこのCPUからコンパイラには構造の欠陥があり，それはFPGAのLUT数不足である．メモリの確保において，どの番地から一時変数の番地を確保すればいいのかがわからず，初期値で500バイトとし，メモリサイズを1024 * 16bitとしていた．
+しかしこれだと使用しているFPGAのLUT数，D\-FFの数を超えてしまい，コンパイルエラーになってしまった．そのため，メモリサイズを256 * 16bitに減らし，一時変数の番地を150番から確保するように変更させた．この変更により，コンパイルエラーが解消され，プログラムが正常に動作するようになったが，使用できるメモリサイズ
+が大幅に減る結果となり，さらに大規模なプログラムの実行や，ほかの機構の搭載を断念せざるを得なくなってしまった．そのため今度開発する機会があれば，余裕のあるLUT数を持つFPGAの選定などを行って行きたい．
+\lstinputlisting[label={code:program}]{../tools/test_main_pragma.c} % コンパイラで変換したcファイルのコードリスト
+\section{プログラム全文}
+作成したプログラムをリスト\ref{code:main}に示す．
+\lstinputlisting[label={code:main}]{./main.v} % トップモジュールのコードリスト
+
+
+
+
+
+\end{document}
